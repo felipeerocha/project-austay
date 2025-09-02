@@ -1,0 +1,1 @@
+export type PagesPath = '/' | 'tutors' | 'pets' | 'bookings' | 'payments'
