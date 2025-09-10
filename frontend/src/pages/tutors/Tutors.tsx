@@ -1,9 +1,13 @@
+import { useState } from 'react'
 import { useTutors } from './hooks'
 import { PiPawPrintFill } from 'react-icons/pi'
 import * as S from './Tutors.styles'
 import { formatPhoneNumber } from '../../utils/phoneNumberFormat'
+import { NewTutorModal } from './components/NewTutorModal'
 
 export function Tutors() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   const { tutors, isLoading, error } = useTutors()
 
   const renderContent = () => {
@@ -12,10 +16,12 @@ export function Tutors() {
     }
 
     if (error) {
-      return <S.StatusMessage>{error}</S.StatusMessage>
+      return (
+        <S.StatusMessage>Ocorreu um erro ao buscar os tutores.</S.StatusMessage>
+      )
     }
 
-    if (tutors.length === 0) {
+    if (!tutors || tutors.length === 0) {
       return <S.StatusMessage>Nenhum tutor encontrado.</S.StatusMessage>
     }
 
@@ -31,9 +37,7 @@ export function Tutors() {
           <S.TutorListRow key={tutor.id}>
             <S.TutorCell>{tutor.name}</S.TutorCell>
             <S.TutorCell>—</S.TutorCell>
-
             <S.TutorCell>{formatPhoneNumber(tutor.phone)}</S.TutorCell>
-
             <S.IconCell>
               <PiPawPrintFill />
             </S.IconCell>
@@ -44,15 +48,21 @@ export function Tutors() {
   }
 
   return (
-    <S.Container>
-      <S.Header>
-        <S.Title>
-          <PiPawPrintFill /> Tutores
-        </S.Title>
-        <S.NewTutorButton>Novo tutor +</S.NewTutorButton>
-      </S.Header>
+    <>
+      <S.Container>
+        <S.Header>
+          <S.Title>
+            <PiPawPrintFill /> Tutores
+          </S.Title>
+          <S.NewTutorButton onClick={() => setIsModalOpen(true)}>
+            Novo tutor +
+          </S.NewTutorButton>
+        </S.Header>
 
-      <S.TutorListContainer>{renderContent()}</S.TutorListContainer>
-    </S.Container>
+        <S.TutorListContainer>{renderContent()}</S.TutorListContainer>
+      </S.Container>
+
+      <NewTutorModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </>
   )
 }
