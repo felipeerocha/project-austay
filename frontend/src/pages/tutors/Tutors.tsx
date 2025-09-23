@@ -38,9 +38,10 @@ export function Tutors() {
             <S.TutorCell>{tutor.name}</S.TutorCell>
             <S.TutorCell>—</S.TutorCell>
             <S.TutorCell>{formatPhoneNumber(tutor.phone)}</S.TutorCell>
-            <S.IconCell>
-              <PiPawPrintFill />
-            </S.IconCell>
+            <S.IconCell onClick={() => setIsModalOpen(true)}>
+  <PiPawPrintFill style={{ cursor: 'pointer' }} />
+</S.IconCell>
+
           </S.TutorListRow>
         ))}
       </>

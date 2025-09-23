@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const Container = styled.main`
-  padding: 2rem 4rem;
+  padding: 1rem;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -34,7 +34,7 @@ export const NewTutorButton = styled.button`
   border-radius: 8px;
   padding: 1.2rem 2.4rem;
   font-size: ${({ theme }) => theme.fontSize.p};
-  font-weight: ${({ theme }) => theme.fontWeight.medium};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
   cursor: pointer;
   transition: background-color 0.2s;
 

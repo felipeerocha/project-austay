@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"; // <-- type-only import
+import type { ReactNode } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -29,7 +29,7 @@ export default function BaseModal({
         </DialogTitle>
       )}
 
-      <DialogContent sx={{ mt: 2 }}>
+      <DialogContent sx={{ padding: 0 }}>
         {children}
       </DialogContent>
 
