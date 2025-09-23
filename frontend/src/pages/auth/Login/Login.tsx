@@ -5,7 +5,7 @@ import * as S from './Login.styles'
 import { ForgotPasswordModal } from '../forgotPassword/ForgotPasswordModal'
 import { useLoginForm } from './hooks/useLoginForm'
 
-import loginVideo from '../../../assets/login-video.mp4'
+import loginVideo from '../../../assets/videoLogin.mp4'
 import logo from '../../../assets/logo-branca.svg' 
 
 export function Login() {
