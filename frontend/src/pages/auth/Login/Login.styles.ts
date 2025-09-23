@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import { TextField, Button } from '@mui/material'
-import waveMask from '../../../assets/onda.svg'
+import waveMask from '../../../assets/onda2.svg'
 
 export const PageContainer = styled.div`
   display: grid;
