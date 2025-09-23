@@ -1,6 +1,6 @@
 export default {
   colors: {
-    accentLavender: "#8D80D0",
+    accentLavender: "#8669D9",
     accentBlue: "#81D0DF",
     accentGreen: "#7BC16C",
     accentPink: "#D080CC",
@@ -15,7 +15,7 @@ export default {
     secondaryButton: "#81D0DF",
 
     textPrimary: "#1C1C1E",
-    textTertiary: "#8D80D0",
+    textTertiary: "#8669D9",
     textSecondary: "#6B6B6B"
   },
   font: "'Poppins', sans-serif",
