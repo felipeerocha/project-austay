@@ -1,10 +1,38 @@
+import { useState } from 'react'
 import { useTutors } from './hooks'
 import { PiPawPrintFill } from 'react-icons/pi'
 import * as S from './Tutors.styles'
 import { formatPhoneNumber } from '../../utils/phoneNumberFormat'
+import { PetModal, AddTutorModal } from '../../components/modal'
+import type { Tutor } from './types'
 
 export function Tutors() {
-  const { tutors, isLoading, error } = useTutors()
+  const { tutors, isLoading, error, refetch } = useTutors()
+  const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAddTutorModalOpen, setIsAddTutorModalOpen] = useState(false)
+
+  const handleViewPets = (tutor: Tutor) => {
+    setSelectedTutor(tutor)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedTutor(null)
+  }
+
+  const handleAddTutor = () => {
+    setIsAddTutorModalOpen(true)
+  }
+
+  const handleCloseAddTutorModal = () => {
+    setIsAddTutorModalOpen(false)
+  }
+
+  const handleTutorCreated = () => {
+    refetch()
+  }
 
   const renderContent = () => {
     if (isLoading) {
@@ -30,12 +58,14 @@ export function Tutors() {
         {tutors.map((tutor) => (
           <S.TutorListRow key={tutor.id}>
             <S.TutorCell>{tutor.name}</S.TutorCell>
-            <S.TutorCell>—</S.TutorCell>
+            <S.TutorCell>{tutor.pets.length}</S.TutorCell>
 
             <S.TutorCell>{formatPhoneNumber(tutor.phone)}</S.TutorCell>
 
             <S.IconCell>
-              <PiPawPrintFill />
+              <S.ViewButton onClick={() => handleViewPets(tutor)}>
+                <PiPawPrintFill />
+              </S.ViewButton>
             </S.IconCell>
           </S.TutorListRow>
         ))}
@@ -49,10 +79,22 @@ export function Tutors() {
         <S.Title>
           <PiPawPrintFill /> Tutores
         </S.Title>
-        <S.NewTutorButton>Novo tutor +</S.NewTutorButton>
+        <S.NewTutorButton onClick={handleAddTutor}>Novo tutor +</S.NewTutorButton>
       </S.Header>
 
       <S.TutorListContainer>{renderContent()}</S.TutorListContainer>
+      
+      <PetModal 
+        tutor={selectedTutor}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
+      
+      <AddTutorModal 
+        isOpen={isAddTutorModalOpen}
+        onClose={handleCloseAddTutorModal}
+        onSuccess={handleTutorCreated}
+      />
     </S.Container>
   )
 }

@@ -88,11 +88,31 @@ export const TutorCell = styled.span`
 export const IconCell = styled.div`
   display: flex;
   justify-content: center;
+`;
+
+export const ViewButton = styled.button`
+  background: none;
+  border: none;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   svg {
     color: ${({ theme }) => theme.colors.accentBlue};
     font-size: 2.4rem;
+  }
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.border};
+    transform: scale(1.1);
+  }
+  
+  &:active {
+    transform: scale(0.95);
   }
 `;
 
