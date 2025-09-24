@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useState } from 'react'
 import { useTutors } from './hooks'
 import { PiPawPrintFill } from 'react-icons/pi'
 import * as S from './Tutors.styles'
@@ -40,10 +41,12 @@ export function Tutors() {
     }
 
     if (error) {
-      return <S.StatusMessage>{error}</S.StatusMessage>
+      return (
+        <S.StatusMessage>Ocorreu um erro ao buscar os tutores.</S.StatusMessage>
+      )
     }
 
-    if (tutors.length === 0) {
+    if (!tutors || tutors.length === 0) {
       return <S.StatusMessage>Nenhum tutor encontrado.</S.StatusMessage>
     }
 
