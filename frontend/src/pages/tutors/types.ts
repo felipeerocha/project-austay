@@ -1,5 +1,5 @@
 export interface Pet {
-  id: number;
+  id: string;
   nome: string;
 }
 
@@ -8,6 +8,5 @@ export interface Tutor {
   name: string;
   phone: string;
   cpf: string;
-  pet_id: string | null;
-
+  pets: Pet[];
 }

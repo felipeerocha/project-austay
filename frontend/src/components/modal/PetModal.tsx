@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Tutor } from '../../pages/tutors/types';
 import * as S from './PetModal.styles';
 

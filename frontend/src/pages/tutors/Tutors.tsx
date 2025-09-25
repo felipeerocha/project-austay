@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useState } from 'react'
 import { useTutors } from './hooks'
 import { PiPawPrintFill } from 'react-icons/pi'
 import * as S from './Tutors.styles'
