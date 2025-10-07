@@ -1,13 +1,15 @@
-export interface Pet {
-  id: number;
-  nome: string;
-}
+// src/pages/Tutors/types.ts
 
-export interface Tutor {
+export type Pet = {
+  id: string;
+  nome: string; // Mude de 'name' para 'nome'
+};
+
+// O tipo Tutor continua o mesmo
+export type Tutor = {
   id: string;
   name: string;
-  phone: string;
   cpf: string;
-  pet_id: string | null;
-
-}
+  phone: string;
+  pets?: Pet[];
+};

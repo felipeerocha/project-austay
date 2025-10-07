@@ -1,18 +1,35 @@
 import { useState } from 'react'
-import { useTutors } from './hooks'
+import { useTutors } from './hooks/useTutors'
 import { PiPawPrintFill } from 'react-icons/pi'
 import * as S from './Tutors.styles'
 import { formatPhoneNumber } from '../../utils/phoneNumberFormat'
-import { NewTutorModal } from './components/NewTutorModal'
+import { NewTutorModal } from './components/NewTutorModal/NewTutorModal'
+import { TutorProfileModal } from './components/TutorProfileModal/TutorProfileModal'
 
 export function Tutors() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isNewTutorModalOpen, setIsNewTutorModalOpen] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null)
 
-  const { tutors, isLoading, error } = useTutors()
+  const { tutors, isLoading, error, refetchTutors } = useTutors()
+
+  const handleViewTutor = (tutorId: string) => {
+    setSelectedTutorId(tutorId)
+    setIsProfileModalOpen(true)
+  }
+
+  const handleCloseProfileModal = () => {
+    setIsProfileModalOpen(false)
+    setSelectedTutorId(null)
+  }
 
   const renderContent = () => {
     if (isLoading) {
-      return <S.StatusMessage>Carregando tutores...</S.StatusMessage>
+      return (
+        <S.LoadingContainer>
+          <S.PurpleSpinner size={24} />
+        </S.LoadingContainer>
+      )
     }
 
     if (error) {
@@ -31,17 +48,16 @@ export function Tutors() {
           <span>Tutor</span>
           <span>Pets</span>
           <span>Telefone</span>
-          <span style={{ textAlign: 'center' }}>Visualizar</span>
+          <span style={{ textAlign: 'center' }}>Ver mais</span>
         </S.TutorListHeader>
         {tutors.map((tutor) => (
           <S.TutorListRow key={tutor.id}>
             <S.TutorCell>{tutor.name}</S.TutorCell>
-            <S.TutorCell>—</S.TutorCell>
+            <S.TutorCell>{tutor.pets?.length ?? 0}</S.TutorCell>
             <S.TutorCell>{formatPhoneNumber(tutor.phone)}</S.TutorCell>
-            <S.IconCell onClick={() => setIsModalOpen(true)}>
-  <PiPawPrintFill style={{ cursor: 'pointer' }} />
-</S.IconCell>
-
+            <S.IconCell onClick={() => handleViewTutor(tutor.id)}>
+              <PiPawPrintFill style={{ cursor: 'pointer' }} />
+            </S.IconCell>
           </S.TutorListRow>
         ))}
       </>
@@ -55,7 +71,7 @@ export function Tutors() {
           <S.Title>
             <PiPawPrintFill /> Tutores
           </S.Title>
-          <S.NewTutorButton onClick={() => setIsModalOpen(true)}>
+          <S.NewTutorButton onClick={() => setIsNewTutorModalOpen(true)}>
             Novo tutor +
           </S.NewTutorButton>
         </S.Header>
@@ -63,7 +79,20 @@ export function Tutors() {
         <S.TutorListContainer>{renderContent()}</S.TutorListContainer>
       </S.Container>
 
-      <NewTutorModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <NewTutorModal
+        open={isNewTutorModalOpen}
+        onClose={() => setIsNewTutorModalOpen(false)}
+        onTutorCreated={refetchTutors}
+      />
+
+      {selectedTutorId && (
+        <TutorProfileModal
+          open={isProfileModalOpen}
+          tutorId={selectedTutorId}
+          onClose={handleCloseProfileModal}
+          onDataChanged={refetchTutors}
+        />
+      )}
     </>
   )
 }
