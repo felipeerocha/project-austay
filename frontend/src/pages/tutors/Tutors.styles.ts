@@ -102,6 +102,11 @@ export const TutorCell = styled.span`
 export const IconCell = styled.div`
   display: flex;
   justify-content: center;
+`;
+
+export const ViewButton = styled.button`
+  background: none;
+  border: none;
   cursor: pointer;
 
   svg {
