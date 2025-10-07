@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useTutors } from './hooks/useTutors'
-import { PiPawPrintFill } from 'react-icons/pi'
 import * as S from './Tutors.styles'
 import { formatPhoneNumber } from '../../utils/phoneNumberFormat'
 import { NewTutorModal } from './components/NewTutorModal/NewTutorModal'
 import { TutorProfileModal } from './components/TutorProfileModal/TutorProfileModal'
+import { PawIcon } from './Tutors.styles'
 
 export function Tutors() {
   const [isNewTutorModalOpen, setIsNewTutorModalOpen] = useState(false)
@@ -56,7 +56,7 @@ export function Tutors() {
             <S.TutorCell>{tutor.pets?.length ?? 0}</S.TutorCell>
             <S.TutorCell>{formatPhoneNumber(tutor.phone)}</S.TutorCell>
             <S.IconCell onClick={() => handleViewTutor(tutor.id)}>
-              <PiPawPrintFill style={{ cursor: 'pointer' }} />
+              <PawIcon />
             </S.IconCell>
           </S.TutorListRow>
         ))}
@@ -69,7 +69,7 @@ export function Tutors() {
       <S.Container>
         <S.Header>
           <S.Title>
-            <PiPawPrintFill /> Tutores
+            <PawIcon /> Tutores
           </S.Title>
           <S.NewTutorButton onClick={() => setIsNewTutorModalOpen(true)}>
             Novo tutor +
