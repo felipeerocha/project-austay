@@ -1,12 +1,12 @@
-export interface Pet {
+export type Pet = {
   id: string;
   nome: string;
-}
+};
 
-export interface Tutor {
+export type Tutor = {
   id: string;
   name: string;
-  phone: string;
   cpf: string;
-  pets: Pet[];
-}
+  phone: string;
+  pets?: Pet[];
+};

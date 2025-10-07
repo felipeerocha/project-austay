@@ -1,42 +1,35 @@
 import { useState } from 'react'
-import { useTutors } from './hooks'
+import { useTutors } from './hooks/useTutors'
 import { PiPawPrintFill } from 'react-icons/pi'
 import * as S from './Tutors.styles'
 import { formatPhoneNumber } from '../../utils/phoneNumberFormat'
-import { PetModal, AddTutorModal } from '../../components/modal'
-import type { Tutor } from './types'
+import { NewTutorModal } from './components/NewTutorModal/NewTutorModal'
+import { TutorProfileModal } from './components/TutorProfileModal/TutorProfileModal'
 
 export function Tutors() {
-  const { tutors, isLoading, error, refetch } = useTutors()
-  const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isAddTutorModalOpen, setIsAddTutorModalOpen] = useState(false)
+  const [isNewTutorModalOpen, setIsNewTutorModalOpen] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [selectedTutorId, setSelectedTutorId] = useState<string | null>(null)
 
-  const handleViewPets = (tutor: Tutor) => {
-    setSelectedTutor(tutor)
-    setIsModalOpen(true)
+  const { tutors, isLoading, error, refetchTutors } = useTutors()
+
+  const handleViewTutor = (tutorId: string) => {
+    setSelectedTutorId(tutorId)
+    setIsProfileModalOpen(true)
   }
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedTutor(null)
-  }
-
-  const handleAddTutor = () => {
-    setIsAddTutorModalOpen(true)
-  }
-
-  const handleCloseAddTutorModal = () => {
-    setIsAddTutorModalOpen(false)
-  }
-
-  const handleTutorCreated = () => {
-    refetch()
+  const handleCloseProfileModal = () => {
+    setIsProfileModalOpen(false)
+    setSelectedTutorId(null)
   }
 
   const renderContent = () => {
     if (isLoading) {
-      return <S.StatusMessage>Carregando tutores...</S.StatusMessage>
+      return (
+        <S.LoadingContainer>
+          <S.PurpleSpinner size={24} />
+        </S.LoadingContainer>
+      )
     }
 
     if (error) {
@@ -55,19 +48,15 @@ export function Tutors() {
           <span>Tutor</span>
           <span>Pets</span>
           <span>Telefone</span>
-          <span style={{ textAlign: 'center' }}>Visualizar</span>
+          <span style={{ textAlign: 'center' }}>Ver mais</span>
         </S.TutorListHeader>
         {tutors.map((tutor) => (
           <S.TutorListRow key={tutor.id}>
             <S.TutorCell>{tutor.name}</S.TutorCell>
-            <S.TutorCell>{tutor.pets.length}</S.TutorCell>
-
+            <S.TutorCell>{tutor.pets?.length ?? 0}</S.TutorCell>
             <S.TutorCell>{formatPhoneNumber(tutor.phone)}</S.TutorCell>
-
-            <S.IconCell>
-              <S.ViewButton onClick={() => handleViewPets(tutor)}>
-                <PiPawPrintFill />
-              </S.ViewButton>
+            <S.IconCell onClick={() => handleViewTutor(tutor.id)}>
+              <PiPawPrintFill style={{ cursor: 'pointer' }} />
             </S.IconCell>
           </S.TutorListRow>
         ))}
@@ -76,27 +65,34 @@ export function Tutors() {
   }
 
   return (
-    <S.Container>
-      <S.Header>
-        <S.Title>
-          <PiPawPrintFill /> Tutores
-        </S.Title>
-        <S.NewTutorButton onClick={handleAddTutor}>Novo tutor +</S.NewTutorButton>
-      </S.Header>
+    <>
+      <S.Container>
+        <S.Header>
+          <S.Title>
+            <PiPawPrintFill /> Tutores
+          </S.Title>
+          <S.NewTutorButton onClick={() => setIsNewTutorModalOpen(true)}>
+            Novo tutor +
+          </S.NewTutorButton>
+        </S.Header>
 
-      <S.TutorListContainer>{renderContent()}</S.TutorListContainer>
-      
-      <PetModal 
-        tutor={selectedTutor}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        <S.TutorListContainer>{renderContent()}</S.TutorListContainer>
+      </S.Container>
+
+      <NewTutorModal
+        open={isNewTutorModalOpen}
+        onClose={() => setIsNewTutorModalOpen(false)}
+        onTutorCreated={refetchTutors}
       />
-      
-      <AddTutorModal 
-        isOpen={isAddTutorModalOpen}
-        onClose={handleCloseAddTutorModal}
-        onSuccess={handleTutorCreated}
-      />
-    </S.Container>
+
+      {selectedTutorId && (
+        <TutorProfileModal
+          open={isProfileModalOpen}
+          tutorId={selectedTutorId}
+          onClose={handleCloseProfileModal}
+          onDataChanged={refetchTutors}
+        />
+      )}
+    </>
   )
 }

@@ -5,7 +5,9 @@ export default {
     accentGreen: "#7BC16C",
     accentPink: "#D080CC",
     accentWhite: "#FFFFFF",
-    accentRed: "#D08080",
+    accentRed: "#c82333",
+    accentRedDuo: "#960000ff",
+    accentGreenDuo: "rgba(68, 130, 159, 1)",
 
     background: "#FFFFFF",
     backgroundMedium: "#F6F7FB",
