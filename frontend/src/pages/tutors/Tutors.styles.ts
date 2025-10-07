@@ -1,5 +1,6 @@
 import { CircularProgress } from '@mui/material'
 import styled from 'styled-components'
+import { PiPawPrintFill as PiPawPrintFillBase } from 'react-icons/pi'
 
 export const Container = styled.main`
   padding: 1rem;
@@ -40,6 +41,11 @@ export const Title = styled.h1`
   svg {
     color: ${({ theme }) => theme.colors.accentLavender};
   }
+`
+export const PawIcon = styled(PiPawPrintFillBase)`
+  cursor: pointer;
+  font-size: 2.5rem;
+  color: ${({ theme }) => theme.colors.accentBlue};
 `
 
 export const NewTutorButton = styled.button`
