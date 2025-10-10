@@ -19,14 +19,17 @@ api.interceptors.request.use(
 )
 
 api.interceptors.response.use(
-  (response) => {
-    return response
-  },
+  (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.config.url === '/auth/token') {
+      return Promise.reject(error)
+    }
+
+    if (error.response?.status === 401) {
       localStorage.removeItem('authToken')
       window.location.href = '/'
     }
+
     return Promise.reject(error)
   }
 )
