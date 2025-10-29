@@ -11,6 +11,7 @@ import { Tutors } from './pages/tutors'
 import { Pets } from './pages/pets'
 import { Bookings } from './pages/bookings'
 import { Payments } from './pages/payments'
+import { Dashboard } from './pages/dashboard'
 import { Login } from './pages/auth'
 import { App } from './App'
 
@@ -24,6 +25,7 @@ createRoot(root).render(
         <Route path="/" element={<Login />} />
         <Route element={<App />}>
           <Route path="/Home" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tutors" element={<Tutors />} />
           <Route path="/pets" element={<Pets />} />
           <Route path="/bookings" element={<Bookings />} />

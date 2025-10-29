@@ -4,6 +4,7 @@ export function Menu() {
   return (
     <div>
       <MenuItem label="Home" icon="Home" navigateTo="home" />
+      <MenuItem label="Dashboard" icon="Dashboard" navigateTo="dashboard" />
       <MenuItem label="Agendamentos" icon="Today" navigateTo="bookings" />
       <MenuItem label="Tutores" icon="PermIdentity" navigateTo="tutors" />
       <MenuItem label="Pets" icon="Pets" navigateTo="pets" />

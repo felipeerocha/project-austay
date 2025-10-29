@@ -1,1 +1,1 @@
-export type PagesPath = 'home' | 'tutors' | 'pets' | 'bookings' | 'payments'
+export type PagesPath = 'home' | 'dashboard' | 'tutors' | 'pets' | 'bookings' | 'payments'
