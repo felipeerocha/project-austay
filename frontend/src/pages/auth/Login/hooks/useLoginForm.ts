@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
-import api from '../../../../services/api'
 import { toastError, toastSuccess } from '../../../../components/toast/toast'
+import { AuthService } from '../../../../services/auth/authService'
+import { AuthStorage } from '../../../../storage/authStorage'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Obrigatório'),
@@ -28,18 +29,12 @@ export function useLoginForm() {
   const handleLogin = async (data: LoginFormData) => {
     setLoading(true)
     try {
-      const response = await api.post('/auth/token', {
-        email: data.email,
-        password: data.password
-      })
-
-      localStorage.setItem('authToken', response.data.access_token)
+      const {access_token} = await AuthService.signIn(data)
+      AuthStorage.saveToken(access_token)
       toastSuccess('Login realizado com sucesso!')
       navigate('/home')
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.detail || 'E-mail ou senha inválidos.'
-      toastError(errorMessage)
+      toastError(err.message)
     } finally {
       setLoading(false)
     }
