@@ -1,12 +1,9 @@
 import { useState } from 'react'
-import api from '../../../../../services/api'
 import { toastError, toastSuccess } from '../../../../../components/toast/toast'
+import type { CreateTutorRequestDTO } from '../../../../../services/tutor/dto/CreateTutorRequestDTO'
+import { TutorService } from '../../../../../services/tutor/tutorService'
 
-type TutorData = {
-  name: string
-  phone: string
-  cpf: string
-}
+type TutorData = CreateTutorRequestDTO
 
 type UseNewTutorProps = {
   onSuccess: () => void
@@ -18,7 +15,7 @@ export function useNewTutor({ onSuccess }: UseNewTutorProps) {
   const handleCreateTutor = async (data: TutorData) => {
     setIsLoading(true)
     try {
-      await api.post('/tutors/', data)
+      await TutorService.createTutor(data)
       toastSuccess('Tutor cadastrado com sucesso!')
       onSuccess()
     } catch (err: any) {

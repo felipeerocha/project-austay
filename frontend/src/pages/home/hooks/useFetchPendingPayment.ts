@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import api from '../../../services/api'
+import { BookingService } from '../../../services/booking/bookingService'
 
 interface Pet {
   id: string
@@ -51,14 +51,12 @@ export function usePendingPayments() {
       setIsLoading(true)
       setError(null)
 
-      const response = await api.get<BookingResponse[]>('/estadias/', {
-        params: {
-          skip: 0,
-          limit: 100
-        }
-      })
+      const responseData = (await BookingService.getBookings({
+        skip: 0,
+        limit: 100
+      })) as BookingResponse[]
 
-      const pending = response.data
+      const pending = responseData
         .filter((booking: any) => !booking.pago)
         .map((booking: any): PendingPaymentBooking => {
           const startDate = new Date(booking.data_entrada)

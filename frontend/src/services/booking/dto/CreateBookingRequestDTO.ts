@@ -1,4 +1,4 @@
-export type BookingData = {
+export type CreateBookingRequestDTO = {
   pet_id: string
   tutor_id: string
   data_entrada: string
@@ -7,5 +7,3 @@ export type BookingData = {
   observacoes: string
   pago: boolean
 }
-
-

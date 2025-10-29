@@ -1,66 +1,67 @@
-import React, { useState } from 'react';
-import api from '../../services/api';
-import * as S from './AddTutorModal.styles';
+import React, { useState } from 'react'
+import type { CreateTutorRequestDTO } from '../../services/tutor/dto/CreateTutorRequestDTO'
+import { TutorService } from '../../services/tutor/tutorService'
+import * as S from './AddTutorModal.styles'
 
 interface AddTutorModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: () => void
 }
 
-interface TutorFormData {
-  name: string;
-  phone: string;
-  cpf: string;
-}
+type TutorFormData = CreateTutorRequestDTO
 
-export function AddTutorModal({ isOpen, onClose, onSuccess }: AddTutorModalProps) {
+export function AddTutorModal({
+  isOpen,
+  onClose,
+  onSuccess
+}: AddTutorModalProps) {
   const [formData, setFormData] = useState<TutorFormData>({
     name: '',
     phone: '',
     cpf: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+    const { name, value } = e.target
+    setFormData((prev) => ({
       ...prev,
       [name]: value
-    }));
+    }))
     // Limpar erro quando usuário começar a digitar
-    if (error) setError(null);
-  };
+    if (error) setError(null)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
 
     try {
-      await api.post('/tutors/', formData);
-      onSuccess();
-      onClose();
+      await TutorService.createTutor(formData)
+      onSuccess()
+      onClose()
       // Resetar formulário
-      setFormData({ name: '', phone: '', cpf: '' });
+      setFormData({ name: '', phone: '', cpf: '' })
     } catch (err: any) {
-      console.error('Erro ao criar tutor:', err);
-      setError(err.response?.data?.detail || 'Erro ao cadastrar tutor');
+      console.error('Erro ao criar tutor:', err)
+      setError(err.response?.data?.detail || 'Erro ao cadastrar tutor')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleClose = () => {
     if (!isLoading) {
-      setFormData({ name: '', phone: '', cpf: '' });
-      setError(null);
-      onClose();
+      setFormData({ name: '', phone: '', cpf: '' })
+      setError(null)
+      onClose()
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <S.ModalOverlay onClick={handleClose}>
@@ -69,11 +70,11 @@ export function AddTutorModal({ isOpen, onClose, onSuccess }: AddTutorModalProps
           <S.ModalTitle>Novo tutor</S.ModalTitle>
           <S.CloseButton onClick={handleClose}>×</S.CloseButton>
         </S.ModalHeader>
-        
+
         <S.ModalBody>
           <S.Form onSubmit={handleSubmit}>
             {error && <S.ErrorMessage>{error}</S.ErrorMessage>}
-            
+
             <S.FormGroup>
               <S.Label htmlFor="name">Nome completo</S.Label>
               <S.Input
@@ -114,13 +115,13 @@ export function AddTutorModal({ isOpen, onClose, onSuccess }: AddTutorModalProps
             </S.FormGroup>
           </S.Form>
         </S.ModalBody>
-        
+
         <S.ModalFooter>
           <S.CancelButton onClick={handleClose} disabled={isLoading}>
             Cancelar
           </S.CancelButton>
-          <S.SubmitButton 
-            type="submit" 
+          <S.SubmitButton
+            type="submit"
             onClick={handleSubmit}
             disabled={isLoading}
           >
@@ -129,5 +130,5 @@ export function AddTutorModal({ isOpen, onClose, onSuccess }: AddTutorModalProps
         </S.ModalFooter>
       </S.ModalContent>
     </S.ModalOverlay>
-  );
+  )
 }

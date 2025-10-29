@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import api from '../../../../../services/api'
 import { toastError, toastSuccess } from '../../../../../components/toast/toast'
+import { TutorService } from '../../../../../services/tutor/tutorService'
 import type { Tutor } from '../../../types'
 
 export function useTutorProfile(
@@ -17,8 +17,8 @@ export function useTutorProfile(
     if (!tutorId) return
     setIsLoading(true)
     try {
-      const response = await api.get(`/tutors/${tutorId}`)
-      setTutor(response.data)
+      const data = await TutorService.getTutor(tutorId)
+      setTutor(data)
     } catch (error) {
       toastError('Não foi possível carregar os dados do tutor.')
       onClose()
@@ -35,7 +35,7 @@ export function useTutorProfile(
     if (!tutorId) return
     setIsUpdating(true)
     try {
-      await api.put(`/tutors/${tutorId}`, data)
+      await TutorService.updateTutor(tutorId, data)
       toastSuccess('Tutor atualizado com sucesso!')
       onDataChanged()
     } catch (error) {
@@ -49,7 +49,7 @@ export function useTutorProfile(
     if (!tutorId) return
     setIsDeleting(true)
     try {
-      await api.delete(`/tutors/${tutorId}`)
+      await TutorService.deleteTutor(tutorId)
       toastSuccess('Tutor excluído com sucesso!')
       onDataChanged()
       onClose()

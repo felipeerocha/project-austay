@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import api from '../../../services/api'
+import { useCallback, useEffect, useState } from 'react'
+import { TutorService } from '../../../services/tutor/tutorService'
 import type { Tutor } from '../types'
 
 export function useTutors() {
@@ -11,8 +11,8 @@ export function useTutors() {
     setIsLoading(true)
     try {
       await new Promise((resolve) => setTimeout(resolve, 500))
-      const response = await api.get<Tutor[]>('/tutors/')
-      setTutors(response.data)
+      const data = await TutorService.getAllTutors()
+      setTutors(data)
       setError(null)
     } catch (err) {
       setError('Não foi possível carregar os tutores.')

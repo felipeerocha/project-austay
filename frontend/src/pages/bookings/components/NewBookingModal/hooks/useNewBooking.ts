@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import api from '../../../../../services/api'
+import { BookingService } from '../../../../../services/booking/bookingService'
 import { toastError, toastSuccess } from '../../../../../components/toast/toast'
-import type { BookingData } from '../../../../home/types'
+import type { CreateBookingRequestDTO } from '../../../../../services/booking/dto/CreateBookingRequestDTO'
 
 type UseNewBookingProps = {
   onSuccess: () => void
@@ -10,16 +10,18 @@ type UseNewBookingProps = {
 export function useNewBooking({ onSuccess }: UseNewBookingProps) {
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleCreateBooking = async (data: BookingData) => {
+  const handleCreateBooking = async (data: CreateBookingRequestDTO) => {
     setIsLoading(true)
     try {
-      await api.post('/estadias/', data)
+      await BookingService.createBooking(data)
       toastSuccess('Estadia criada com sucesso!')
       onSuccess()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.detail || 'Não foi possível criar a estadia.'
+        err?.message ||
+        err.response?.data?.detail ||
+        'Não foi possível criar a estadia.'
       toastError(errorMessage)
     } finally {
       setIsLoading(false)

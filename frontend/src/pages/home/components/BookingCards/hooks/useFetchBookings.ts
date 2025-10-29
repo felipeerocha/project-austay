@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react'
-import api from '../../../../../services/api'
+import { BookingService } from '../../../../../services/booking/bookingService'
 
 interface Pet {
   id: string
@@ -49,14 +49,12 @@ export function useBookings() {
       setIsLoading(true)
       setError(null)
 
-      const response = await api.get<BookingResponse[]>('/estadias/', {
-        params: {
-          skip: 0,
-          limit: 100
-        }
-      })
+      const responseData = (await BookingService.getBookings({
+        skip: 0,
+        limit: 100
+      })) as BookingResponse[]
 
-      const allBookings: Booking[] = response.data.map((booking: any) => ({
+      const allBookings: Booking[] = responseData.map((booking: any) => ({
         id: booking.id,
         pet_name: booking.pet.nome,
         tutor_name: booking.tutor.name,

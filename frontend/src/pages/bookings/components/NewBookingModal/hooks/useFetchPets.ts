@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import api from '../../../../../services/api'
+import { PetService } from '../../../../../services/pet/petService'
 import type { Pet } from '../../../../pets/types'
 
 export function usePets() {
@@ -11,12 +11,11 @@ export function usePets() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.get<Pet[]>('/pets/?skip=0&limit=100')
-      setPets(response.data)
+      const data = await PetService.getPets({ skip: 0, limit: 100 })
+      setPets(data)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.detail || 'Não foi possível carregar os pets.'
+      const errorMessage = err?.message || 'Não foi possível carregar os pets.'
       setError(errorMessage)
     } finally {
       setIsLoading(false)
