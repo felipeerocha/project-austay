@@ -10,36 +10,19 @@ import * as S from './Payments.styles'
 import { PaymentExecuteModal } from './components/PaymentExecuteModal/PaymentExecuteModal'
 import { DateFormat } from '../../utils/dateFormat'
 
+type Payment = GetBookingsDTO & GetPaymentsDTO
+
 export function Payments() {
-  const [payments, setPayments] = useState<(GetBookingsDTO & GetPaymentsDTO)[]>(
-    []
-  )
-  const [selectedPayment, setSelectedPayment] = useState<
-    (GetBookingsDTO & GetPaymentsDTO) | null
-  >(null)
-  const [isOpenDetailsModal, setIsOpenDetailsModal] = useState(false)
-  const [isOpenExecuteModal, setIsOpenExecuteModal] = useState(false)
+  const [payments, setPayments] = useState<Payment[]>([])
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [isExecuteOpen, setIsExecuteOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const handleOpenDetailsModal = (payment: GetBookingsDTO & GetPaymentsDTO) => {
-    setSelectedPayment(payment)
-    setIsOpenDetailsModal(true)
-  }
-
-  const handleOpenExecuteModal = () => {
-    setIsOpenDetailsModal(false)
-    setIsOpenExecuteModal(true)
-  }
-
-  const handleExecutePaymentSave = () => {
-    fetchPayments()
-  }
 
   const fetchPayments = useCallback(async () => {
     setIsLoading(true)
     setError(null)
-
     try {
       const response = await PaymentService.getPayments()
       setPayments(response)
@@ -53,7 +36,84 @@ export function Payments() {
 
   useEffect(() => {
     fetchPayments()
+  }, [fetchPayments])
+
+  const openDetails = useCallback((payment: Payment) => {
+    setSelectedPayment(payment)
+    setIsDetailsOpen(true)
   }, [])
+
+  const openExecuteFromDetails = useCallback(() => {
+    setIsDetailsOpen(false)
+    setIsExecuteOpen(true)
+  }, [])
+
+  const handleExecuteSave = useCallback(() => {
+    fetchPayments()
+  }, [fetchPayments])
+
+  const LoadingView = () => (
+    <S.LoadingContainer>
+      <S.PurpleSpinner size={24} />
+    </S.LoadingContainer>
+  )
+
+  const EmptyView = () => (
+    <S.EmptyPaymentsContainer>
+      {' '}
+      Nenhum pagamento registrado.{' '}
+    </S.EmptyPaymentsContainer>
+  )
+
+  const ErrorView = ({ message }: { message: string }) => (
+    <S.EmptyPaymentsContainer>
+      <p>{message}</p>
+      <S.ReloadButton onClick={fetchPayments}>Recarregar</S.ReloadButton>
+    </S.EmptyPaymentsContainer>
+  )
+
+  const PaymentsHeader = () => (
+    <S.PaymentsListHeader>
+      <S.SortableHeader>
+        TUTOR
+        <RxCaretSort />
+      </S.SortableHeader>
+      <S.SortableHeader>
+        PET <RxCaretSort />
+      </S.SortableHeader>
+      <S.SortableHeader>
+        DATA <RxCaretSort />
+      </S.SortableHeader>
+      <S.SortableHeader>
+        VALOR <RxCaretSort />
+      </S.SortableHeader>
+      <S.NonSortableHeader>STATUS</S.NonSortableHeader>
+      <S.NonSortableHeader>VER MAIS</S.NonSortableHeader>
+    </S.PaymentsListHeader>
+  )
+
+  const PaymentRow = ({ payment }: { payment: Payment }) => (
+    <S.PaymentsListRow key={payment.id}>
+      <S.PaymentCell>{payment.tutor.name}</S.PaymentCell>
+      <S.PaymentCell>{payment.pet.nome}</S.PaymentCell>
+      <S.PaymentCell>
+        {payment.data_pagamento
+          ? DateFormat.formatDayAndMonth(payment.data_pagamento)
+          : '-'}
+      </S.PaymentCell>
+      <S.PaymentCell>
+        {payment.valor > 0 ? MoneyFormat.formatCurrency(payment.valor) : '-'}
+      </S.PaymentCell>
+      <S.BadgeCell>
+        <S.StatusBadge status={payment.status === 'pago' ? 'paid' : 'pending'}>
+          {payment.status}
+        </S.StatusBadge>
+      </S.BadgeCell>
+      <S.IconCell onClick={() => openDetails(payment)}>
+        <PawIcon />
+      </S.IconCell>
+    </S.PaymentsListRow>
+  )
 
   return (
     <>
@@ -66,83 +126,37 @@ export function Payments() {
 
         <S.PaymentsListContainer>
           {isLoading ? (
-            <S.LoadingContainer>
-              <S.PurpleSpinner size={24} />
-            </S.LoadingContainer>
+            <LoadingView />
           ) : payments.length === 0 ? (
-            <S.EmptyPaymentsContainer>
-              Nenhum pagamento registrado.
-            </S.EmptyPaymentsContainer>
+            <EmptyView />
           ) : error ? (
-            <S.EmptyPaymentsContainer>
-              <p>{error}</p>
-              <S.ReloadButton onClick={fetchPayments}>
-                Recarregar
-              </S.ReloadButton>
-            </S.EmptyPaymentsContainer>
+            <ErrorView message={error} />
           ) : (
             <>
-              <S.PaymentsListHeader>
-                <S.SortableHeader>
-                  TUTOR
-                  <RxCaretSort />
-                </S.SortableHeader>
-                <S.SortableHeader>
-                  PET <RxCaretSort />
-                </S.SortableHeader>
-                <S.SortableHeader>
-                  DATA <RxCaretSort />
-                </S.SortableHeader>
-                <S.SortableHeader>
-                  VALOR <RxCaretSort />
-                </S.SortableHeader>
-                <S.NonSortableHeader>STATUS</S.NonSortableHeader>
-                <S.NonSortableHeader>VER MAIS</S.NonSortableHeader>
-              </S.PaymentsListHeader>
-              {payments.map((payment) => (
-                <S.PaymentsListRow key={payment.id}>
-                  <S.PaymentCell>{payment.tutor.name}</S.PaymentCell>
-                  <S.PaymentCell>{payment.pet.nome}</S.PaymentCell>
-                  <S.PaymentCell>
-                    {payment.data_pagamento
-                      ? DateFormat.formatDayAndMonth(payment.data_pagamento)
-                      : '-'}
-                  </S.PaymentCell>
-                  <S.PaymentCell>
-                    {payment.valor > 0
-                      ? MoneyFormat.formatCurrency(payment.valor)
-                      : '-'}
-                  </S.PaymentCell>
-                  <S.BadgeCell>
-                    <S.StatusBadge
-                      status={payment.status === 'pago' ? 'paid' : 'pending'}
-                    >
-                      {payment.status}
-                    </S.StatusBadge>
-                  </S.BadgeCell>
-                  <S.IconCell onClick={() => handleOpenDetailsModal(payment)}>
-                    <PawIcon />
-                  </S.IconCell>
-                </S.PaymentsListRow>
+              <PaymentsHeader />
+              {payments.map((p) => (
+                <PaymentRow key={p.id} payment={p} />
               ))}
             </>
           )}
         </S.PaymentsListContainer>
       </S.Container>
+
       {selectedPayment && (
         <PaymentDetailsModal
-          open={isOpenDetailsModal}
-          payment={selectedPayment!}
-          onClose={() => setIsOpenDetailsModal(false)}
-          onPressEdit={handleOpenExecuteModal}
+          open={isDetailsOpen}
+          payment={selectedPayment}
+          onClose={() => setIsDetailsOpen(false)}
+          onPressEdit={openExecuteFromDetails}
         />
       )}
+
       {selectedPayment && (
         <PaymentExecuteModal
-          open={isOpenExecuteModal}
-          payment={selectedPayment!}
-          onClose={() => setIsOpenExecuteModal(false)}
-          onSave={handleExecutePaymentSave}
+          open={isExecuteOpen}
+          payment={selectedPayment}
+          onClose={() => setIsExecuteOpen(false)}
+          onSave={handleExecuteSave}
         />
       )}
     </>

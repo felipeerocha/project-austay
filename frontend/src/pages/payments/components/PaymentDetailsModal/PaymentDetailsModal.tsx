@@ -4,6 +4,7 @@ import type { GetPaymentsDTO } from '../../../../services/payments/dto/GetPaymen
 import * as S from './PaymentDetailsModal.styles'
 import { MoneyFormat } from '../../../../utils/moneyFormat'
 import { DateFormat } from '../../../../utils/dateFormat'
+import React from 'react'
 
 type PaymentDetailsModalProps = {
   open: boolean
@@ -12,61 +13,68 @@ type PaymentDetailsModalProps = {
   onPressEdit: () => void
 }
 
-export function PaymentDetailsModal(props: PaymentDetailsModalProps) {
-  const { open, onClose, onPressEdit } = props
-
+export function PaymentDetailsModal({
+  open,
+  payment,
+  onClose,
+  onPressEdit
+}: PaymentDetailsModalProps) {
   if (!open) return null
 
+  const Field: React.FC<{ label: string; children: React.ReactNode }> = ({
+    label,
+    children
+  }) => (
+    <S.FieldContainer>
+      <S.FieldLabel>{label}</S.FieldLabel>
+      <S.FieldValue>{children}</S.FieldValue>
+    </S.FieldContainer>
+  )
+
+  const tutorName = payment?.tutor?.name ?? '-'
+  const petName = payment?.pet?.nome ?? '-'
+  const entrada = payment?.data_entrada
+    ? DateFormat.formatDayAndMonth(payment.data_entrada)
+    : '-'
+  const saida = payment?.data_saida
+    ? DateFormat.formatDayAndMonth(payment.data_saida)
+    : '-'
+  const valor =
+    typeof payment?.valor !== 'undefined'
+      ? MoneyFormat.formatCurrency(payment.valor)
+      : '-'
+  const status = payment?.status ?? '-'
+  const dataPagamento = payment?.data_pagamento
+    ? DateFormat.formatDayAndMonth(payment.data_pagamento)
+    : '-'
+
+  const isPending = status === 'pendente'
+
   return (
-    <>
-      <S.ModalContainer open={open} onClose={onClose}>
-        <S.ModalHeader>
-          <h2>Descrição pagamento</h2>
-          <S.CloseButton aria-label="close" onClick={onClose}>
-            <CloseIcon />
-          </S.CloseButton>
-        </S.ModalHeader>
-        <S.Content>
-          <S.FieldContainer>
-            <S.FieldLabel>Tutor</S.FieldLabel>
-            <S.FieldValue>{props.payment.tutor.name}</S.FieldValue>
-          </S.FieldContainer>
-          <S.FieldContainer>
-            <S.FieldLabel>Pet</S.FieldLabel>
-            <S.FieldValue>{props.payment.pet.nome}</S.FieldValue>
-          </S.FieldContainer>
-          <S.FieldContainer>
-            <S.FieldLabel>Estadia</S.FieldLabel>
-            <S.FieldValue>
-              {DateFormat.formatDayAndMonth(props.payment.data_entrada)} -{' '}
-              {DateFormat.formatDayAndMonth(props.payment.data_saida)}
-            </S.FieldValue>
-          </S.FieldContainer>
-          <S.FieldContainer>
-            <S.FieldLabel>Valor</S.FieldLabel>
-            <S.FieldValue>
-              {MoneyFormat.formatCurrency(props.payment.valor)}
-            </S.FieldValue>
-          </S.FieldContainer>
-          <S.FieldContainer>
-            <S.FieldLabel>Status</S.FieldLabel>
-            <S.FieldValue>{props.payment.status}</S.FieldValue>
-          </S.FieldContainer>
-          <S.FieldContainer>
-            <S.FieldLabel>Data do pagamento</S.FieldLabel>
-            <S.FieldValue>
-              {props.payment.data_pagamento
-                ? DateFormat.formatDayAndMonth(props.payment.data_pagamento)
-                : '-'}
-            </S.FieldValue>
-          </S.FieldContainer>
-        </S.Content>
-        {props.payment.status === 'pendente' && (
-          <S.ActionsContainer onClick={onPressEdit}>
-            <S.EditButton>Registrar pagamento</S.EditButton>
-          </S.ActionsContainer>
-        )}
-      </S.ModalContainer>
-    </>
+    <S.ModalContainer open={open} onClose={onClose}>
+      <S.ModalHeader>
+        <h2>Descrição pagamento</h2>
+        <S.CloseButton aria-label="close" onClick={onClose}>
+          <CloseIcon />
+        </S.CloseButton>
+      </S.ModalHeader>
+
+      <S.Content>
+        <Field label="Tutor">{tutorName}</Field>
+        <Field label="Pet">{petName}</Field>
+        <Field label="Estadia">
+          {entrada} - {saida}
+        </Field>
+        <Field label="Valor">{valor}</Field>
+        <Field label="Status">{status}</Field>
+        <Field label="Data do pagamento">{dataPagamento}</Field>
+      </S.Content>
+
+      {isPending && (
+        <S.ActionsContainer onClick={onPressEdit}>
+          <S.EditButton>Registrar pagamento</S.EditButton>
+        </S.ActionsContainer>
+      )}
+    </S.ModalContainer>
   )
 }
