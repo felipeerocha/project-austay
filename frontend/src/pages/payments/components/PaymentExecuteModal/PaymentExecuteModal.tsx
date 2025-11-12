@@ -4,6 +4,7 @@ import type { GetBookingsDTO } from '../../../../services/payments/dto/GetBookin
 import type { GetPaymentsDTO } from '../../../../services/payments/dto/GetPaymentsDTO'
 import { PaymentService } from '../../../../services/payments/paymentService'
 import * as S from './PaymentExecuteModal.styles'
+import { DateFormat } from '../../../../utils/dateFormat'
 
 type PaymentExecuteModalProps = {
   open: boolean
@@ -11,6 +12,7 @@ type PaymentExecuteModalProps = {
   onClose: () => void
   onSave: () => void
 }
+
 const PAYMENT_METHODS = [
   { id: 1, label: 'Cartão de Crédito' },
   { id: 2, label: 'Cartão de Débito' },
@@ -19,13 +21,6 @@ const PAYMENT_METHODS = [
 ]
 
 const DEFAULT_PAYMENT_METHOD_LABEL = 'Selecione um meio de pagamento'
-
-const formatToInputDate = (d?: string) => {
-  if (!d) return ''
-  return /^\d{4}-\d{2}-\d{2}/.test(d)
-    ? d.slice(0, 10)
-    : new Date(d).toISOString().slice(0, 10)
-}
 
 export function PaymentExecuteModal(props: PaymentExecuteModalProps) {
   const { open, onClose, onSave } = props
@@ -52,7 +47,7 @@ export function PaymentExecuteModal(props: PaymentExecuteModalProps) {
         await PaymentService.executePayment(props.payment.id, {
           status: true,
           meio_pagamento: paymentMethod,
-          data_pagamento: formatToInputDate(paymentDate)
+          data_pagamento: paymentDate
         })
 
         onSave()
@@ -67,7 +62,7 @@ export function PaymentExecuteModal(props: PaymentExecuteModalProps) {
   }
 
   useEffect(() => {
-    const prefillingDate = formatToInputDate(new Date().toISOString())
+    const prefillingDate = DateFormat.getTodayDate()
 
     setPaymentDate(prefillingDate)
     setPaymentMethod(DEFAULT_PAYMENT_METHOD_LABEL)
@@ -100,7 +95,9 @@ export function PaymentExecuteModal(props: PaymentExecuteModalProps) {
           <S.StyledTextField
             type="date"
             value={paymentDate}
-            onChange={(e) => setPaymentDate(e.target.value)}
+            onChange={(e) => {
+              setPaymentDate(e.target.value)
+            }}
             fullWidth
             slotProps={{
               inputLabel: { shrink: true },
