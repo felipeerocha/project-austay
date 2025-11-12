@@ -1,5 +1,15 @@
 export function formatDayAndMonth(dateString: string): string {
-  const date = new Date(dateString)
+  const parts = dateString.split('-')
+
+  let date: Date
+  if (parts.length === 3) {
+    const year = Number(parts[0])
+    const month = Math.max(0, Number(parts[1]) - 1)
+    const day = Number(parts[2])
+    date = new Date(year, month, day)
+  } else {
+    date = new Date(dateString)
+  }
 
   const options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
