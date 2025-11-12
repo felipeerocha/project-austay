@@ -25,6 +25,24 @@ export function NewTutorModal({
     }
   })
 
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11)
+    if (digits.length <= 2) return digits
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    if (digits.length <= 10)
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+  }
+
+  const formatCpf = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11)
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+    if (digits.length <= 9)
+      return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+  }
+
   useEffect(() => {
     if (open) {
       setName('')
@@ -33,12 +51,26 @@ export function NewTutorModal({
     }
   }, [open])
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value)
+    setPhone(formatted)
+  }
+
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCpf(e.target.value)
+    setCpf(formatted)
+  }
+
   const handleSave = () => {
     if (!name || !phone || !cpf) {
       console.error('Preencha todos os campos.')
       return
     }
-    handleCreateTutor({ name, phone, cpf })
+    handleCreateTutor({
+      name,
+      phone: phone.replace(/\D/g, ''),
+      cpf: cpf.replace(/\D/g, '')
+    })
   }
 
   return (
@@ -61,16 +93,18 @@ export function NewTutorModal({
         <S.StyledTextField
           label="Telefone"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={handlePhoneChange}
           fullWidth
           disabled={isLoading}
+          inputProps={{ maxLength: 15, inputMode: 'numeric' }}
         />
         <S.StyledTextField
           label="CPF"
           value={cpf}
-          onChange={(e) => setCpf(e.target.value)}
+          onChange={handleCpfChange}
           fullWidth
           disabled={isLoading}
+          inputProps={{ maxLength: 14, inputMode: 'numeric' }}
         />
       </S.FormContainer>
 

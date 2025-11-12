@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import * as S from './NewBooking.styles'
 import { useNewBooking } from './hooks/useNewBooking'
 import { PetSelect } from '../../../home/components/PetSelect/PetSelect'
 import { NewPetModal } from '../../../pets/components/NewPetModal/NewPetModal'
 import { usePets } from './hooks/useFetchPets'
+import { toastError } from '../../../../components/toast/toast'
 
 type NewBookingModalProps = {
   open: boolean
@@ -26,6 +27,8 @@ export function NewBookingModal({
   const [valorDiaria, setValorDiaria] = useState('')
   const [valorTotal, setValorTotal] = useState(0)
   const [observacoes, setObservacoes] = useState('')
+  const [formaPagamento, setFormaPagamento] = useState('')
+  const [daysCount, setDaysCount] = useState(0)
 
   const [isNewPetModalOpen, setIsNewPetModalOpen] = useState(false)
 
@@ -44,7 +47,8 @@ export function NewBookingModal({
   }, [dataEntrada, dataSaida, valorDiaria])
 
   const calculateValorTotal = () => {
-    if (!dataEntrada || !dataSaida || !valorDiaria) {
+    if (!dataEntrada || !dataSaida) {
+      setDaysCount(0)
       setValorTotal(0)
       return
     }
@@ -53,12 +57,22 @@ export function NewBookingModal({
     const endDate = new Date(dataSaida)
 
     const timeDiff = endDate.getTime() - startDate.getTime()
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
-    if (daysDiff <= 0) {
+    if (timeDiff < 0) {
+      setDaysCount(0)
       setValorTotal(0)
       return
     }
+
+    const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24)) + 1
+
+    if (daysDiff <= 0) {
+      setDaysCount(0)
+      setValorTotal(0)
+      return
+    }
+
+    setDaysCount(daysDiff)
 
     const dailyRate = parseFloat(valorDiaria.replace(',', '.')) || 0
     const total = daysDiff * dailyRate
@@ -98,18 +112,10 @@ export function NewBookingModal({
       !selectedTutorId ||
       !dataEntrada ||
       !dataSaida ||
-      !horaInicio ||
-      !valorDiaria
+      !valorDiaria ||
+      !horaInicio
     ) {
-      console.error('Preencha todos os campos obrigatórios.')
-      console.log('Dados faltando:', {
-        selectedPetId,
-        selectedTutorId,
-        dataEntrada,
-        dataSaida,
-        horaInicio,
-        valorDiaria
-      })
+      toastError('Preencha todos os campos obrigatórios.')
       return
     }
 
@@ -130,7 +136,7 @@ export function NewBookingModal({
     handleCreateBooking(payload)
   }
 
-  const handleNewPetClick = (e: React.MouseEvent) => {
+  const handleNewPetClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     onClose()
     setIsNewPetModalOpen(true)
@@ -147,6 +153,8 @@ export function NewBookingModal({
       setValorDiaria('')
       setValorTotal(0)
       setObservacoes('')
+      setFormaPagamento('')
+      setDaysCount(0)
     }
   }, [open])
 
@@ -164,9 +172,7 @@ export function NewBookingModal({
           <div>
             <S.FieldLabel>Pet</S.FieldLabel>
 
-            <S.PetSelectionContainer
-              style={{ display: 'flex', gap: 18, alignItems: 'center' }}
-            >
+            <S.PetSelectionContainer>
               <PetSelect
                 value={selectedPetId}
                 onChange={handlePetChange}
@@ -182,9 +188,8 @@ export function NewBookingModal({
               </S.NewPetButton>
             </S.PetSelectionContainer>
           </div>
-
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <S.DateDiv>
+          <S.DateFieldsRow>
+            <S.FieldColumn>
               <S.FieldLabel>Data de Entrada</S.FieldLabel>
               <S.StyledTextField
                 type="date"
@@ -201,8 +206,9 @@ export function NewBookingModal({
                   }
                 }}
               />
-            </S.DateDiv>
-            <S.DateDiv>
+            </S.FieldColumn>
+
+            <S.FieldColumn>
               <S.FieldLabel>Data de Saída</S.FieldLabel>
               <S.StyledTextField
                 type="date"
@@ -219,11 +225,18 @@ export function NewBookingModal({
                   }
                 }}
               />
-            </S.DateDiv>
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <S.FieldLabel>Hora de Entrada</S.FieldLabel>
+            </S.FieldColumn>
+
+            {daysCount > 0 && (
+              <S.DaysBadge>
+                {daysCount} {daysCount === 1 ? 'dia' : 'dias'}
+              </S.DaysBadge>
+            )}
+          </S.DateFieldsRow>
+
+          <S.FieldsRow>
+            <S.FieldColumn>
+              <S.FieldLabel>Hora de entrada</S.FieldLabel>
               <S.StyledTextField
                 type="time"
                 value={horaInicio}
@@ -236,9 +249,9 @@ export function NewBookingModal({
                   }
                 }}
               />
-            </div>
-            <div style={{ flex: 1 }}>
-              <S.FieldLabel>Hora de Saída</S.FieldLabel>
+            </S.FieldColumn>
+            <S.FieldColumn>
+              <S.FieldLabel>Hora de saída</S.FieldLabel>
               <S.StyledTextField
                 type="time"
                 value={horaFinal}
@@ -251,11 +264,33 @@ export function NewBookingModal({
                   }
                 }}
               />
-            </div>
+            </S.FieldColumn>
+          </S.FieldsRow>
+
+          <div>
+            <S.FieldLabel>Forma de pagamento</S.FieldLabel>
+            <S.StyledTextField
+              select
+              value={formaPagamento}
+              onChange={(e) => setFormaPagamento(e.target.value)}
+              fullWidth
+              disabled={isLoading}
+            >
+              <S.StyledMenuItem value="">
+                <em>Selecionar</em>
+              </S.StyledMenuItem>
+              <S.StyledMenuItem value="pix">Pix</S.StyledMenuItem>
+              <S.StyledMenuItem value="cartao">Cartão</S.StyledMenuItem>
+              <S.StyledMenuItem value="dinheiro">Dinheiro</S.StyledMenuItem>
+              <S.StyledMenuItem value="transferencia">
+                Transferência
+              </S.StyledMenuItem>
+            </S.StyledTextField>
           </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <S.FieldLabel>Valor da Diária</S.FieldLabel>
+
+          <S.FieldsRow>
+            <S.FieldColumn>
+              <S.FieldLabel>Valor da diária</S.FieldLabel>
               <S.CurrencyTextField
                 value={valorDiaria}
                 onChange={(e) => handleValorDiariaChange(e.target.value)}
@@ -269,9 +304,9 @@ export function NewBookingModal({
                   }
                 }}
               />
-            </div>
-            <div style={{ flex: 1 }}>
-              <S.FieldLabel>Valor Total</S.FieldLabel>
+            </S.FieldColumn>
+            <S.FieldColumn>
+              <S.FieldLabel>Valor total</S.FieldLabel>
               <S.CurrencyTextField
                 value={valorTotal.toLocaleString('pt-BR', {
                   minimumFractionDigits: 2,
@@ -279,14 +314,6 @@ export function NewBookingModal({
                 })}
                 fullWidth
                 disabled
-                slotProps={{
-                  htmlInput: {
-                    style: {
-                      backgroundColor: '#f5f5f5',
-                      color: '#666'
-                    }
-                  }
-                }}
                 sx={{
                   '& .MuiInputBase-input': {
                     backgroundColor: '#f5f5f5',
@@ -295,8 +322,8 @@ export function NewBookingModal({
                   }
                 }}
               />
-            </div>
-          </div>
+            </S.FieldColumn>
+          </S.FieldsRow>
           <div>
             <S.FieldLabel>Observações</S.FieldLabel>
             <S.StyledTextField

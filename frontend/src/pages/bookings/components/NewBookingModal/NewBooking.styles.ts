@@ -13,9 +13,9 @@ import { FaPlus } from 'react-icons/fa'
 export const ModalContainer = styled(Dialog)`
   .MuiDialog-paper {
     border-radius: 10px;
-    padding: 40px 60px 60px;
+    padding: 48px 60px 60px;
     width: 100%;
-    max-width: 580px;
+    max-width: 640px;
     max-height: 90vh;
     overflow: hidden;
     display: flex;
@@ -66,12 +66,6 @@ export const ModalContainer = styled(Dialog)`
   }
 `
 
-export const DateDiv = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-`
-
 export const ModalHeader = styled(Box)`
   display: flex;
   justify-content: space-between;
@@ -99,7 +93,7 @@ export const FormContainer = styled(Box)<
 >`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   overflow: auto;
   flex: 1;
   padding-right: 8px;
@@ -308,8 +302,12 @@ export const StyledMenuItem = styled(MenuItem)`
 `
 
 export const NewPetButton = styled.button`
-  background-color: ${({ theme }) => theme.colors.textTertiary};
-  color: white;
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.accentLavender} 0%,
+    ${({ theme }) => theme.colors.accentLavenderDuo} 100%
+  );
+  color: ${({ theme }) => theme.colors.accentWhite};
   border: none;
   border-radius: 8px;
   padding: 1.2rem 2.4rem;
@@ -322,7 +320,11 @@ export const NewPetButton = styled.button`
   gap: 0.9rem;
 
   &:hover {
-    background-color: rgba(68, 130, 159, 1);
+    background: linear-gradient(
+      135deg,
+      ${({ theme }) => theme.colors.accentLavenderDuo} 0%,
+      ${({ theme }) => theme.colors.accentLavender} 100%
+    );
   }
 `
 
@@ -340,4 +342,34 @@ export const PlusIcon = styled(FaPlus)`
   font-size: 1.2rem;
   flex-shrink: 0;
   transition: transform 0.2s;
+`
+
+export const FieldsRow = styled.div`
+  display: flex;
+  gap: 1.6rem;
+  width: 100%;
+`
+
+export const FieldColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+`
+
+export const DateFieldsRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 1.6rem;
+  align-items: end;
+`
+
+export const DaysBadge = styled.span`
+  padding: 0.9rem 1.9rem;
+  border-radius: 999px;
+  background: rgba(134, 105, 217, 0.12);
+  color: ${({ theme }) => theme.colors.textTertiary};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  font-size: ${({ theme }) => theme.fontSize.small};
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 `
