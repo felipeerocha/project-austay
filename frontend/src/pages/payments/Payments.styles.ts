@@ -54,12 +54,11 @@ export const PaymentsListContainer = styled.div`
   padding: 1.5rem 3rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   flex: 1;
-  max-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
 `
 
-const paymentsGridTemplate = '1.2fr 1fr 1fr 1fr 1fr 0.5fr'
+const paymentsGridTemplate = '1.2fr 1fr 1fr 1fr 1fr 1fr'
 
 export const PaymentsListHeader = styled.div`
   display: grid;
@@ -87,23 +86,6 @@ export const SortableHeader = styled.span`
 `
 
 export const NonSortableHeader = styled.span`
-  font-size: ${({ theme }) => theme.fontSize.p};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-weight: ${({ theme }) => theme.fontWeight.medium};
-  text-transform: uppercase;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: color 0.2s;
-  user-select: none;
-
-  &:hover {
-    color: ${({ theme }) => theme.colors.accentLavender};
-  }
-`
-
-export const IconHeader = styled.span`
   font-size: ${({ theme }) => theme.fontSize.p};
   color: ${({ theme }) => theme.colors.textSecondary};
   font-weight: ${({ theme }) => theme.fontWeight.medium};
@@ -154,6 +136,8 @@ export const StatusBadge = styled.span<StatusBadgeProps>`
   font-size: ${({ theme }) => theme.fontSize.small};
   font-weight: ${({ theme }) => theme.fontWeight.medium};
   text-transform: uppercase;
+  text-align: center;
+  width: 100px;
 
   background-color: ${({ status }) =>
     status === 'pending'
@@ -170,7 +154,40 @@ export const StatusBadge = styled.span<StatusBadgeProps>`
       : '#721C24'};
 `
 
+export const BadgeCell = styled.div`
+  display: flex;
+  justify-content: center;
+`
+
 export const IconCell = styled.div`
   display: flex;
   justify-content: center;
+`
+
+export const EmptyPaymentsContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 5rem;
+  margin-bottom: 5rem;
+  font-size: ${({ theme }) => theme.fontSize.p};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`
+
+export const ReloadButton = styled.button`
+  margin-top: 1rem;
+  background-color: ${({ theme }) => theme.colors.accentLavender};
+  color: ${({ theme }) => theme.colors.accentWhite};
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.accentLavenderDuo};
+  }
 `

@@ -7,4 +7,6 @@ export type GetBookingsDTO = {
   tutor: {
     name: string
   }
+  data_entrada: string
+  data_saida: string
 }

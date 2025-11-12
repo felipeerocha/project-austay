@@ -1,5 +1,6 @@
 import { ApiError } from '../../utils/ApiError'
 import api from '../api'
+import type { ExecutePaymentRequestDTO } from './dto/ExecutePaymentRequestDTO'
 import type { GetBookingsDTO } from './dto/GetBookingsDTO'
 import type { GetPaymentsDTO } from './dto/GetPaymentsDTO'
 
@@ -11,17 +12,15 @@ async function getPayments(): Promise<(GetBookingsDTO & GetPaymentsDTO)[]> {
     ])
 
     const merged = bookings.map((booking) => {
-      const payment = payments.find((p) => p.estadia_id === booking.id)
+      const payment = payments.find((p) => p.estadia_id === booking.id)!
 
       return {
         ...booking,
-        ...(payment ?? {
-          data_pagamento: '-',
-          valor: 0,
-          status: booking.pago ? 'pago' : 'pendente',
-          estadia_id: booking.id,
-          id: ''
-        })
+        ...payment,
+        status:
+          payment.status === 'true' || booking.pago === true
+            ? 'pago'
+            : 'pendente'
       }
     })
 
@@ -49,6 +48,18 @@ async function getPaymentsList(): Promise<GetPaymentsDTO[]> {
   }
 }
 
+async function executePayment(
+  paymentId: string,
+  paymentData: ExecutePaymentRequestDTO
+) {
+  try {
+    await api.put(`/pagamentos/${paymentId}`, paymentData)
+  } catch (error: any) {
+    throw new ApiError('Não foi possível executar o pagamento')
+  }
+}
+
 export const PaymentService = Object.freeze({
-  getPayments
+  getPayments,
+  executePayment
 })
