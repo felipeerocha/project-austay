@@ -5,6 +5,7 @@ import { useNewPet } from './hooks/useNewPet'
 import { TutorSelect } from '../../../home/components/TutorSelect/TutorSelect'
 import { NewTutorModal } from '../../../tutors/components/NewTutorModal/NewTutorModal'
 import { useTutors } from '../../../tutors/hooks/useTutors'
+import { toastError } from '../../../../components/toast/toast'
 
 type NewPetModalProps = {
   open: boolean
@@ -43,6 +44,7 @@ export function NewPetModal({ open, onClose, onPetCreated }: NewPetModalProps) {
 
   const handleSave = () => {
     if (!selectedTutorId || !petName || !especie || !sexo || !dataNascimento) {
+      toastError('Preencha todos os campos obrigatórios.')
       console.error('Preencha todos os campos obrigatórios.')
       console.log('Dados faltando:', {
         selectedTutorId,

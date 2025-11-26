@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import * as S from './NewTutorModal.styles'
 import { useNewTutor } from './../NewTutorModal/hooks/useNewTutor'
+import { toastError } from '../../../../components/toast/toast'
 
 type NewTutorModalProps = {
   open: boolean
@@ -40,7 +41,10 @@ export function NewTutorModal({
     if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
     if (digits.length <= 9)
       return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(
+      6,
+      9
+    )}-${digits.slice(9)}`
   }
 
   useEffect(() => {
@@ -63,6 +67,7 @@ export function NewTutorModal({
 
   const handleSave = () => {
     if (!name || !phone || !cpf) {
+      toastError('Preencha todos os campos.')
       console.error('Preencha todos os campos.')
       return
     }
