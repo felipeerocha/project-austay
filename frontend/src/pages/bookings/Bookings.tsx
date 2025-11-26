@@ -2,23 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CircularProgress } from '@mui/material'
 import { FaPlus } from 'react-icons/fa'
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md'
+import { FiEdit2, FiSearch, FiTrash2 } from 'react-icons/fi'
 import * as S from './Bookings.styles'
 import { PawIcon } from '../tutors/Tutors.styles'
 import { NewBookingModal } from './components/NewBookingModal/NewBookingModal'
-import api from '../../services/api'
 import type { Booking } from './types'
-
-type BookingResponse = {
-  id: string
-  data_entrada: string
-  data_saida: string
-  pet: {
-    nome: string
-  }
-  tutor: {
-    name: string
-  }
-}
+import { stayService } from '../../services/stayService'
+import { StayManagerModal } from '../../components/modal'
 
 type EventColor = {
   background: string
@@ -28,6 +18,7 @@ type EventColor = {
 type CalendarEvent = {
   id: string
   label: string
+  petName: string
   tutorName: string
   startDate: Date
   endDate: Date
@@ -44,6 +35,7 @@ type WeekSegment = {
   segmentId: string
   id: string
   label: string
+  petName: string
   tutorName: string
   startCol: number
   span: number
@@ -51,6 +43,21 @@ type WeekSegment = {
   color: EventColor
   isTruncatedStart: boolean
   isTruncatedEnd: boolean
+}
+
+type StayFilter = 'all' | 'active' | 'upcoming' | 'finished'
+
+const stayFilterOptions: Array<{ value: StayFilter; label: string }> = [
+  { value: 'all', label: 'Todas' },
+  { value: 'active', label: 'Em andamento' },
+  { value: 'upcoming', label: 'Agendadas' },
+  { value: 'finished', label: 'Finalizadas' }
+]
+
+const statusLabels: Record<Exclude<StayFilter, 'all'>, string> = {
+  active: 'Em andamento',
+  upcoming: 'Agendada',
+  finished: 'Finalizada'
 }
 
 const weekdayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
@@ -155,6 +162,73 @@ const buildEventColor = (index: number) => {
   return { background: color, border }
 }
 
+const formatDateKey = (date: Date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const normalizeText = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+
+const getStayStatus = (booking: Booking): Exclude<StayFilter, 'all'> => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const start = parseDate(booking.data_entrada)
+  const end = parseDate(booking.data_saida)
+
+  if (today < start) return 'upcoming'
+  if (today > end) return 'finished'
+  return 'active'
+}
+
+const formatShortDateLabel = (date: Date) =>
+  date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit'
+  })
+
+const formatRangeLabel = (booking: Booking) => {
+  const entrada = formatShortDateLabel(parseDate(booking.data_entrada))
+  const saida = formatShortDateLabel(parseDate(booking.data_saida))
+  return `${entrada} • ${saida}`
+}
+
+const formatTimeRange = (booking: Booking) => {
+  const start = booking.hora_inicio ? booking.hora_inicio.slice(0, 5) : '--'
+  const end = booking.hora_final ? booking.hora_final.slice(0, 5) : '--'
+  return `${start} às ${end}`
+}
+
+const ensureValorTotal = (
+  entrada: string,
+  saida: string | null,
+  valorDiaria: number
+) => {
+  if (!saida) {
+    return valorDiaria
+  }
+
+  const start = parseDate(entrada)
+  const end = parseDate(saida)
+  const days = Math.max(1, differenceInCalendarDays(end, start) + 1)
+  return days * valorDiaria
+}
+
+const formatCurrencyValue = (value?: number) => {
+  if (typeof value !== 'number') return '—'
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  })
+}
+
+const formatPaymentLabel = (paid?: boolean) => (paid ? 'Pago' : 'Pendente')
+
 export function Bookings() {
   const [currentMonth, setCurrentMonth] = useState(() => {
     const today = new Date()
@@ -164,28 +238,39 @@ export function Bookings() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StayFilter>('all')
+  const [isManagerModalOpen, setIsManagerModalOpen] = useState(false)
+  const [selectedStayId, setSelectedStayId] = useState<string | null>(null)
+  const [stayModalMode, setStayModalMode] = useState<'edit' | 'delete'>('edit')
+  const [activeView, setActiveView] = useState<'calendar' | 'list'>('calendar')
 
   const fetchBookings = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.get<BookingResponse[]>('/estadias/', {
-        params: {
-          skip: 0,
-          limit: 200
-        }
-      })
+      const response = await stayService.list({ limit: 300 })
 
-      const mapped: Booking[] = response.data.map((item) => ({
+      const mapped: Booking[] = response.map((item) => ({
         id: item.id,
         pet_name: item.pet.nome,
         tutor_name: item.tutor.name,
         data_entrada: item.data_entrada,
-        data_saida: item.data_saida
+        data_saida: item.data_saida ?? item.data_entrada,
+        hora_inicio: item.hora_inicio,
+        hora_final: item.hora_final,
+        valor_diaria: item.valor_diaria,
+        valor_total:
+          typeof item.valor_total === 'number'
+            ? item.valor_total
+            : ensureValorTotal(item.data_entrada, item.data_saida, item.valor_diaria),
+        observacoes: item.observacoes,
+        pago: item.pago
       }))
 
       setBookings(mapped)
     } catch (err) {
+      console.error(err)
       setError('Não foi possível carregar os agendamentos.')
     } finally {
       setIsLoading(false)
@@ -205,6 +290,21 @@ export function Bookings() {
   }
 
   const handleBookingCreated = () => {
+    fetchBookings()
+  }
+
+  const handleOpenStayManager = (stayId: string, mode: 'edit' | 'delete' = 'edit') => {
+    setSelectedStayId(stayId)
+    setStayModalMode(mode)
+    setIsManagerModalOpen(true)
+  }
+
+  const handleCloseStayManager = () => {
+    setIsManagerModalOpen(false)
+    setSelectedStayId(null)
+  }
+
+  const handleStayManagerSuccess = () => {
     fetchBookings()
   }
 
@@ -236,6 +336,34 @@ export function Bookings() {
     return result
   }, [currentMonth])
 
+  const filteredBookings = useMemo(() => {
+    const normalized = searchTerm ? normalizeText(searchTerm) : ''
+
+    return bookings.filter((booking) => {
+      if (normalized) {
+        const haystack = normalizeText(`${booking.pet_name} ${booking.tutor_name}`)
+        if (!haystack.includes(normalized)) {
+          return false
+        }
+      }
+
+      if (statusFilter !== 'all' && getStayStatus(booking) !== statusFilter) {
+        return false
+      }
+
+      return true
+    })
+  }, [bookings, searchTerm, statusFilter])
+
+  const checkinsByDay = useMemo(() => {
+    const map = new Map<string, number>()
+    bookings.forEach((booking) => {
+      const current = map.get(booking.data_entrada) ?? 0
+      map.set(booking.data_entrada, current + 1)
+    })
+    return map
+  }, [bookings])
+
   const events = useMemo<CalendarEvent[]>(() => {
     const colorAssignments = new Map<string, number>()
     let colorIndex = 0
@@ -252,6 +380,7 @@ export function Bookings() {
       return {
         id: booking.id,
         label: `Estadia ${booking.pet_name}`,
+        petName: booking.pet_name,
         tutorName: booking.tutor_name,
         startDate: parseDate(booking.data_entrada),
         endDate: parseDate(booking.data_saida),
@@ -282,6 +411,7 @@ export function Bookings() {
           segmentId: `${event.id}-${week.start.toISOString()}-${startCol}`,
           id: event.id,
           label: event.label,
+          petName: event.petName,
           tutorName: event.tutorName,
           startCol,
           span,
@@ -342,95 +472,246 @@ export function Bookings() {
           </S.ScheduleButton>
         </S.Header>
 
-        <S.CalendarCard>
-          <S.CalendarHeader>
-            <S.MonthButton
-              type="button"
-              onClick={handlePrevMonth}
-              aria-label="Mês anterior"
-            >
-              <MdKeyboardArrowLeft />
-            </S.MonthButton>
-            <S.MonthLabel>{formatMonthLabel(currentMonth)}</S.MonthLabel>
-            <S.MonthButton
-              type="button"
-              onClick={handleNextMonth}
-              aria-label="Próximo mês"
-            >
-              <MdKeyboardArrowRight />
-            </S.MonthButton>
-          </S.CalendarHeader>
+        <S.ViewTabs role="tablist" aria-label="Alternar entre calendário e lista">
+          <S.ViewTabButton
+            type="button"
+            role="tab"
+            aria-selected={activeView === 'calendar'}
+            aria-controls="calendar-view"
+            $active={activeView === 'calendar'}
+            onClick={() => setActiveView('calendar')}
+          >
+            Calendário
+          </S.ViewTabButton>
+          <S.ViewTabButton
+            type="button"
+            role="tab"
+            aria-selected={activeView === 'list'}
+            aria-controls="list-view"
+            $active={activeView === 'list'}
+            onClick={() => setActiveView('list')}
+          >
+            Estadias
+          </S.ViewTabButton>
+        </S.ViewTabs>
 
-          <S.DayNamesRow>
-            {weekdayLabels.map((label) => (
-              <S.DayName key={label}>{label}</S.DayName>
-            ))}
-          </S.DayNamesRow>
+        {activeView === 'calendar' ? (
+          <S.CalendarCard id="calendar-view">
+            <S.CalendarHeader>
+              <S.MonthButton
+                type="button"
+                onClick={handlePrevMonth}
+                aria-label="Mês anterior"
+              >
+                <MdKeyboardArrowLeft />
+              </S.MonthButton>
+              <S.MonthLabel>{formatMonthLabel(currentMonth)}</S.MonthLabel>
+              <S.MonthButton
+                type="button"
+                onClick={handleNextMonth}
+                aria-label="Próximo mês"
+              >
+                <MdKeyboardArrowRight />
+              </S.MonthButton>
+            </S.CalendarHeader>
 
-          <S.WeeksContainer>
-            {weeks.map((week, index) => {
-              const layout = weekLayouts[index]
-              const segments = layout?.segments ?? []
-              const laneCount = layout?.laneCount ?? 0
+            <S.DayNamesRow>
+              {weekdayLabels.map((label) => (
+                <S.DayName key={label}>{label}</S.DayName>
+              ))}
+            </S.DayNamesRow>
 
-              return (
-                <S.WeekRow key={week.start.toISOString()}>
-                  {week.days.map((day) => (
-                    <S.DayCell
-                      key={day.toISOString()}
-                      $isCurrentMonth={
-                        day.getMonth() === currentMonth.getMonth()
-                      }
-                      $isToday={isSameDay(day, today)}
-                    >
-                      <S.DayNumber
-                        $isCurrentMonth={
-                          day.getMonth() === currentMonth.getMonth()
-                        }
-                      >
-                        {day.getDate()}
-                      </S.DayNumber>
-                    </S.DayCell>
-                  ))}
+            <S.WeeksContainer>
+              {weeks.map((week, index) => {
+                const layout = weekLayouts[index]
+                const segments = layout?.segments ?? []
+                const laneCount = layout?.laneCount ?? 0
 
-                  {segments.length > 0 && (
-                    <S.EventsLayer $laneCount={laneCount}>
-                      {segments.map((segment) => (
-                        <S.EventPill
-                          key={segment.segmentId}
-                          $background={segment.color.background}
-                          $border={segment.color.border}
-                          $isTruncatedStart={segment.isTruncatedStart}
-                          $isTruncatedEnd={segment.isTruncatedEnd}
-                          style={{
-                            gridColumn: `${segment.startCol + 1} / span ${segment.span}`,
-                            gridRow: `${segment.lane + 1}`
-                          }}
+                return (
+                  <S.WeekRow key={week.start.toISOString()} $laneCount={laneCount}>
+                    {week.days.map((day) => {
+                      const key = formatDateKey(day)
+                      const dayCheckins = checkinsByDay.get(key) ?? 0
+
+                      return (
+                        <S.DayCell
+                          key={day.toISOString()}
+                          $isCurrentMonth={day.getMonth() === currentMonth.getMonth()}
+                          $isToday={isSameDay(day, today)}
                         >
-                          {segment.label}
-                        </S.EventPill>
-                      ))}
-                    </S.EventsLayer>
-                  )}
-                </S.WeekRow>
-              )
-            })}
-          </S.WeeksContainer>
+                          <S.DayNumber
+                            $isCurrentMonth={day.getMonth() === currentMonth.getMonth()}
+                          >
+                            {day.getDate()}
+                          </S.DayNumber>
+                          {dayCheckins >= 2 && (
+                            <S.DayBadge>{`${dayCheckins} check-ins`}</S.DayBadge>
+                          )}
+                        </S.DayCell>
+                      )
+                    })}
 
-          {isLoading && (
-            <S.EmptyState>
-              <CircularProgress size={24} sx={{ color: '#8669D9' }} />
-              Carregando agendamentos...
-            </S.EmptyState>
-          )}
+                    {segments.length > 0 && (
+                      <S.EventsLayer $laneCount={laneCount}>
+                        {segments.map((segment) => (
+                          <S.EventPill
+                            key={segment.segmentId}
+                            $background={segment.color.background}
+                            $border={segment.color.border}
+                            $isTruncatedStart={segment.isTruncatedStart}
+                            $isTruncatedEnd={segment.isTruncatedEnd}
+                            style={{
+                              gridColumn: `${segment.startCol + 1} / span ${segment.span}`,
+                              gridRow: `${segment.lane + 1}`
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Editar ${segment.label}`}
+                            onClick={() => handleOpenStayManager(segment.id, 'edit')}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault()
+                                handleOpenStayManager(segment.id, 'edit')
+                              }
+                            }}
+                          >
+                            {segment.label}
+                          </S.EventPill>
+                        ))}
+                      </S.EventsLayer>
+                    )}
+                  </S.WeekRow>
+                )
+              })}
+            </S.WeeksContainer>
 
-          {!isLoading && error && <S.EmptyState>{error}</S.EmptyState>}
+            {isLoading && (
+              <S.EmptyState>
+                <CircularProgress size={24} sx={{ color: '#8669D9' }} />
+                Carregando agendamentos...
+              </S.EmptyState>
+            )}
 
-          {!isLoading && !error && bookings.length === 0 && (
-            <S.EmptyState>Sem agendamentos para este período.</S.EmptyState>
-          )}
-        </S.CalendarCard>
+            {!isLoading && error && <S.EmptyState>{error}</S.EmptyState>}
+
+            {!isLoading && !error && bookings.length === 0 && (
+              <S.EmptyState>Sem agendamentos para este período.</S.EmptyState>
+            )}
+          </S.CalendarCard>
+        ) : (
+          <S.StayListCard id="list-view">
+            <S.ListHeader>
+              <S.ListTitle>
+                <h2>Listagem de estadias</h2>
+                <span>{filteredBookings.length} {filteredBookings.length === 1 ? 'item' : 'itens'}</span>
+              </S.ListTitle>
+              <S.SearchWrapper>
+                <S.SearchIcon>
+                  <FiSearch />
+                </S.SearchIcon>
+                <S.SearchInput
+                  placeholder="Buscar por pet ou tutor"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                />
+              </S.SearchWrapper>
+              <S.FilterGroup>
+                {stayFilterOptions.map((option) => (
+                  <S.FilterChip
+                    key={option.value}
+                    $active={statusFilter === option.value}
+                    type="button"
+                    onClick={() => setStatusFilter(option.value)}
+                  >
+                    {option.label}
+                  </S.FilterChip>
+                ))}
+              </S.FilterGroup>
+            </S.ListHeader>
+
+            {error ? (
+              <S.ListEmptyState>{error}</S.ListEmptyState>
+            ) : filteredBookings.length === 0 ? (
+              <S.ListEmptyState>
+                Nenhuma estadia encontrada com os filtros atuais.
+              </S.ListEmptyState>
+            ) : (
+              <S.StayList>
+                {filteredBookings.map((booking) => {
+                  const status = getStayStatus(booking)
+                  return (
+                    <S.StayRow key={booking.id}>
+                      <S.StayRowHeader>
+                        <S.StayInfo>
+                          <S.StayPet>{booking.pet_name}</S.StayPet>
+                          <S.StayTutor>{booking.tutor_name}</S.StayTutor>
+                        </S.StayInfo>
+                        <S.StayIndicators>
+                          <S.StatusBadge $status={status}>{statusLabels[status]}</S.StatusBadge>
+                        </S.StayIndicators>
+                      </S.StayRowHeader>
+
+                      <S.StayMeta>
+                        <S.MetaItem>
+                          <S.MetaLabel>Período</S.MetaLabel>
+                          <S.MetaValue>{formatRangeLabel(booking)}</S.MetaValue>
+                        </S.MetaItem>
+                        <S.MetaItem>
+                          <S.MetaLabel>Horários</S.MetaLabel>
+                          <S.MetaValue>{formatTimeRange(booking)}</S.MetaValue>
+                        </S.MetaItem>
+                        <S.MetaItem>
+                          <S.MetaLabel>Valor diária</S.MetaLabel>
+                          <S.MetaValue>{formatCurrencyValue(booking.valor_diaria)}</S.MetaValue>
+                        </S.MetaItem>
+                        <S.MetaItem>
+                          <S.MetaLabel>Valor total</S.MetaLabel>
+                          <S.MetaValue>{formatCurrencyValue(booking.valor_total)}</S.MetaValue>
+                        </S.MetaItem>
+                        <S.MetaItem>
+                          <S.MetaLabel>Pagamento</S.MetaLabel>
+                          <S.MetaValue>{formatPaymentLabel(booking.pago)}</S.MetaValue>
+                        </S.MetaItem>
+                        {booking.observacoes && (
+                          <S.MetaItem>
+                            <S.MetaLabel>Observações</S.MetaLabel>
+                            <S.MetaValue>{booking.observacoes}</S.MetaValue>
+                          </S.MetaItem>
+                        )}
+                      </S.StayMeta>
+
+                      <S.StayActions>
+                        <S.StayActionButton
+                          type="button"
+                          onClick={() => handleOpenStayManager(booking.id, 'edit')}
+                        >
+                          <FiEdit2 /> Editar
+                        </S.StayActionButton>
+                        <S.StayActionButton
+                          $variant="danger"
+                          type="button"
+                          onClick={() => handleOpenStayManager(booking.id, 'delete')}
+                        >
+                          <FiTrash2 /> Excluir
+                        </S.StayActionButton>
+                      </S.StayActions>
+                    </S.StayRow>
+                  )
+                })}
+              </S.StayList>
+            )}
+          </S.StayListCard>
+        )}
       </S.Container>
+
+      <StayManagerModal
+        open={isManagerModalOpen}
+        stayId={selectedStayId}
+        onClose={handleCloseStayManager}
+        initialMode={stayModalMode}
+        onUpdateSuccess={handleStayManagerSuccess}
+        onDeleteSuccess={handleStayManagerSuccess}
+      />
 
       <NewBookingModal
         open={isModalOpen}

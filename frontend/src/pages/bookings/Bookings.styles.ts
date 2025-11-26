@@ -62,6 +62,270 @@ export const CalendarCard = styled.section`
   gap: 2.4rem;
 `
 
+export const StayListCard = styled.section`
+  background: ${({ theme }) => theme.colors.accentWhite};
+  border-radius: 28px;
+  padding: 2.4rem;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-height: 100%;
+`
+
+export const ViewTabs = styled.div`
+  display: inline-flex;
+  padding: 0.4rem;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.backgroundMedium};
+  gap: 0.4rem;
+  align-self: flex-start;
+`
+
+export const ViewTabButton = styled.button<{ $active: boolean }>`
+  border: none;
+  border-radius: 999px;
+  padding: 0.8rem 1.8rem;
+  font-size: ${({ theme }) => theme.fontSize.small};
+  font-weight: ${({ theme }) => theme.fontWeight.medium};
+  cursor: pointer;
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.accentWhite : theme.colors.textSecondary};
+  background: ${({ theme, $active }) =>
+    $active ? theme.colors.accentLavender : 'transparent'};
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+`
+
+export const ListHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+`
+
+export const ListTitle = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    font-size: ${({ theme }) => theme.fontSize.h4};
+    color: ${({ theme }) => theme.colors.textPrimary};
+    font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  }
+
+  span {
+    font-size: ${({ theme }) => theme.fontSize.small};
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+`
+
+export const SearchWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`
+
+export const SearchInput = styled.input`
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem 1.2rem 4.2rem;
+  background: ${({ theme }) => theme.colors.backgroundMedium};
+  font-size: ${({ theme }) => theme.fontSize.p};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  box-shadow: inset 0 0 0 1px rgba(134, 105, 217, 0.12);
+  transition: box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px ${({ theme }) => theme.colors.accentLavender};
+  }
+`
+
+export const SearchIcon = styled.span`
+  position: absolute;
+  left: 1.4rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+export const FilterGroup = styled.div`
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+`
+
+export const FilterChip = styled.button<{ $active: boolean }>`
+  border: none;
+  border-radius: 14px;
+  padding: 0.8rem 1.6rem;
+  font-size: ${({ theme }) => theme.fontSize.small};
+  font-weight: ${({ theme }) => theme.fontWeight.medium};
+  cursor: pointer;
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.accentLavender : theme.colors.backgroundMedium};
+  color: ${({ $active, theme }) => ($active ? theme.colors.accentWhite : theme.colors.textSecondary)};
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+`
+
+export const StayList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-height: 640px;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(134, 105, 217, 0.3);
+    border-radius: 999px;
+  }
+`
+
+export const StayRow = styled.div`
+  border: 1px solid rgba(134, 105, 217, 0.12);
+  border-radius: 20px;
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  background: ${({ theme }) => theme.colors.backgroundMedium};
+`
+
+export const StayRowHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+`
+
+export const StayIndicators = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+`
+
+export const StayInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+`
+
+export const StayPet = styled.span`
+  font-size: ${({ theme }) => theme.fontSize.p};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+`
+
+export const StayTutor = styled.span`
+  font-size: 1.3rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`
+
+export const StayMeta = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  font-size: 1.3rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`
+
+export const MetaItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+`
+
+export const MetaLabel = styled.span`
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`
+
+export const MetaValue = styled.span`
+  font-size: ${({ theme }) => theme.fontSize.p};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-weight: ${({ theme }) => theme.fontWeight.medium};
+  word-break: break-word;
+`
+
+export const StayDates = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+`
+
+export const StatusBadge = styled.span<{ $status: 'active' | 'upcoming' | 'finished' }>`
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  text-transform: uppercase;
+  color: ${({ $status }) =>
+    $status === 'active' ? '#0C5460' : $status === 'upcoming' ? '#4a5568' : '#7c2d12'};
+  background: ${({ $status }) =>
+    $status === 'active'
+      ? '#D1ECF1'
+      : $status === 'upcoming'
+      ? 'rgba(84, 179, 206, 0.15)'
+      : 'rgba(255, 170, 0, 0.15)'};
+`
+
+export const StayActions = styled.div`
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+`
+
+export const StayActionButton = styled.button<{ $variant?: 'danger' }>`
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.2rem;
+  font-size: 1.3rem;
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  background: ${({ theme, $variant }) =>
+    $variant === 'danger' ? theme.colors.accentRed : `${theme.colors.accentLavender}1a`};
+  color: ${({ theme, $variant }) =>
+    $variant === 'danger' ? theme.colors.accentWhite : theme.colors.textTertiary};
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+`
+
+export const ListEmptyState = styled.div`
+  border: 1px dashed ${({ theme }) => theme.colors.border};
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  font-size: ${({ theme }) => theme.fontSize.p};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`
+
 export const CalendarHeader = styled.div`
   display: flex;
   justify-content: center;
@@ -125,12 +389,12 @@ export const WeeksContainer = styled.div`
   gap: 0.6rem;
 `
 
-export const WeekRow = styled.div`
+export const WeekRow = styled.div<{ $laneCount: number }>`
   position: relative;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.4rem;
-  min-height: 12rem;
+  min-height: ${({ $laneCount }) => `${10 + Math.max($laneCount, 1) * 3.6}rem`};
   padding: 0.4rem;
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(246, 247, 251, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
@@ -149,6 +413,7 @@ export const DayCell = styled.div<{
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  justify-content: space-between;
   border: 1px solid rgba(134, 105, 217, 0.1);
   transition: border 0.2s ease, box-shadow 0.2s ease;
 
@@ -168,6 +433,21 @@ export const DayNumber = styled.span<{
   font-weight: ${({ theme }) => theme.fontWeight.medium};
   color: ${({ $isCurrentMonth, theme }) =>
     $isCurrentMonth ? theme.colors.textPrimary : 'rgba(0, 0, 0, 0.35)'};
+`
+
+export const DayBadge = styled.span`
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.textTertiary};
+  background: ${({ theme }) => `${theme.colors.accentLavender}1f`};
 `
 
 export const EventsLayer = styled.div<{
@@ -207,6 +487,17 @@ export const EventPill = styled.div<{
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(84, 179, 206, 0.4);
+  }
 
   ${({ $isTruncatedStart }) =>
     $isTruncatedStart &&

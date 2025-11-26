@@ -6,6 +6,7 @@ import { PetSelect } from '../../../home/components/PetSelect/PetSelect'
 import { NewPetModal } from '../../../pets/components/NewPetModal/NewPetModal'
 import { usePets } from './hooks/useFetchPets'
 import { toastError } from '../../../../components/toast/toast'
+import { DateFormat } from '../../../../utils/dateFormat'
 
 type NewBookingModalProps = {
   open: boolean
@@ -33,6 +34,8 @@ export function NewBookingModal({
   const [isNewPetModalOpen, setIsNewPetModalOpen] = useState(false)
 
   const { refetchPets } = usePets()
+
+  const todayDate = DateFormat.getTodayDate()
 
   const { isLoading, handleCreateBooking } = useNewBooking({
     onSuccess: () => {
@@ -146,8 +149,9 @@ export function NewBookingModal({
     if (open) {
       setSelectedPetId('')
       setSelectedTutorId('')
-      setDataEntrada('')
-      setDataSaida('')
+      const today = DateFormat.getTodayDate()
+      setDataEntrada(today)
+      setDataSaida(today)
       setHoraInicio('08:00')
       setHoraFinal('18:00')
       setValorDiaria('')
@@ -202,7 +206,7 @@ export function NewBookingModal({
                     shrink: true
                   },
                   htmlInput: {
-                    min: new Date().toISOString().split('T')[0]
+                    min: todayDate
                   }
                 }}
               />
@@ -221,7 +225,7 @@ export function NewBookingModal({
                     shrink: true
                   },
                   htmlInput: {
-                    min: dataEntrada || new Date().toISOString().split('T')[0]
+                    min: dataEntrada || todayDate
                   }
                 }}
               />
