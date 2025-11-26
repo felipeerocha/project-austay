@@ -18,6 +18,7 @@ interface BookingResponse {
   hora_inicio: string
   hora_final: string
   valor_diaria: number
+  valor_total: number | null
   observacoes: string
   pago: boolean
   pet: Pet
@@ -65,7 +66,10 @@ export function usePendingPayments() {
           const endDate = new Date(booking.data_saida)
           const timeDiff = endDate.getTime() - startDate.getTime()
           const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
-          const valorTotal = daysDiff * booking.valor_diaria
+          const valorTotal =
+            typeof booking.valor_total === 'number'
+              ? booking.valor_total
+              : daysDiff * booking.valor_diaria
 
           return {
             id: booking.id,

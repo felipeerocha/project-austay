@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { RxCaretSort } from 'react-icons/rx'
-import type { GetBookingsDTO } from '../../services/payments/dto/GetBookingsDTO'
-import type { GetPaymentsDTO } from '../../services/payments/dto/GetPaymentsDTO'
-import { PaymentService } from '../../services/payments/paymentService'
+import { PaymentService, type PaymentRecord } from '../../services/payments/paymentService'
 import { MoneyFormat } from '../../utils/moneyFormat'
 import { PawIcon } from '../tutors/Tutors.styles'
 import { PaymentDetailsModal } from './components/PaymentDetailsModal/PaymentDetailsModal'
@@ -10,11 +8,9 @@ import * as S from './Payments.styles'
 import { PaymentExecuteModal } from './components/PaymentExecuteModal/PaymentExecuteModal'
 import { DateFormat } from '../../utils/dateFormat'
 
-type Payment = GetBookingsDTO & GetPaymentsDTO
-
 export function Payments() {
-  const [payments, setPayments] = useState<Payment[]>([])
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
+  const [payments, setPayments] = useState<PaymentRecord[]>([])
+  const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [isExecuteOpen, setIsExecuteOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -92,7 +88,7 @@ export function Payments() {
     </S.PaymentsListHeader>
   )
 
-  const PaymentRow = ({ payment }: { payment: Payment }) => (
+  const PaymentRow = ({ payment }: { payment: PaymentRecord }) => (
     <S.PaymentsListRow key={payment.id}>
       <S.PaymentCell>{payment.tutor.name}</S.PaymentCell>
       <S.PaymentCell>{payment.pet.nome}</S.PaymentCell>
@@ -102,7 +98,9 @@ export function Payments() {
           : '-'}
       </S.PaymentCell>
       <S.PaymentCell>
-        {payment.valor > 0 ? MoneyFormat.formatCurrency(payment.valor) : '-'}
+        {typeof payment.valor === 'number'
+          ? MoneyFormat.formatCurrency(payment.valor)
+          : '-'}
       </S.PaymentCell>
       <S.BadgeCell>
         <S.StatusBadge status={payment.status === 'pago' ? 'paid' : 'pending'}>

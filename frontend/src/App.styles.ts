@@ -3,21 +3,23 @@ import styled, { css } from "styled-components";
 export const AppContainer = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
 `;
 
 export const AppBody = styled.div`
   flex: 1 1 auto;
-  min-height: 0; 
+  min-height: 0;
   display: flex;
+  overflow: hidden;
 `;
 
 export const MainContent = styled.main`
   flex-grow: 1;
   min-width: 0;
   min-height: 0;
-  overflow: auto;
+  height: 100%;
+  overflow-y: auto;
   padding: 3.2rem;
   width: 100%;
 

@@ -7,16 +7,21 @@ import { FaHome } from 'react-icons/fa'
 import { TbCalendarCheck } from 'react-icons/tb'
 import type { CheckInOutSummary, MovimentacoesPorData } from './types'
 import { MovimentacoesModal } from './components/MovimentacoesModal'
+import { StayManagerModal } from '../../components/modal'
+import { FiEdit2, FiTrash2 } from 'react-icons/fi'
 
 export function Dashboard() {
-  const { dashboardData, isLoading, error } = useDashboard()
-  const { petsHospedados, isLoading: petsLoading } = usePetsHospedados()
+  const { dashboardData, isLoading, error, refetchDashboard } = useDashboard()
+  const { petsHospedados, isLoading: petsLoading, refetchPetsHospedados } = usePetsHospedados()
   const { fetchMoreDays, isLoading: moreDaysLoading } = useMoreDays()
   const { fetchMovimentacoes, isLoading: movimentacoesLoading } = useMovimentacoesPorData()
   const [moreDays, setMoreDays] = useState<CheckInOutSummary[]>([])
   const [currentDaysCount, setCurrentDaysCount] = useState(7)
   const [modalOpen, setModalOpen] = useState(false)
   const [movimentacoesData, setMovimentacoesData] = useState<MovimentacoesPorData | null>(null)
+  const [isStayModalOpen, setIsStayModalOpen] = useState(false)
+  const [selectedStayId, setSelectedStayId] = useState<string | null>(null)
+  const [stayModalMode, setStayModalMode] = useState<'edit' | 'delete'>('edit')
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -62,6 +67,30 @@ export function Dashboard() {
         console.error('Error loading movimentacoes:', err)
       }
     }
+  }
+
+  const handleOpenStayModal = (stayId: string, mode: 'edit' | 'delete') => {
+    setSelectedStayId(stayId)
+    setStayModalMode(mode)
+    setIsStayModalOpen(true)
+  }
+
+  const handleStayModalClose = () => {
+    setIsStayModalOpen(false)
+    setSelectedStayId(null)
+  }
+
+  const refreshStayData = () => {
+    refetchPetsHospedados()
+    refetchDashboard()
+  }
+
+  const handleStayUpdateSuccess = () => {
+    refreshStayData()
+  }
+
+  const handleStayDeleteSuccess = () => {
+    refreshStayData()
   }
 
   useEffect(() => {
@@ -174,7 +203,8 @@ export function Dashboard() {
               <S.PetsListHeaderCell>Entrada</S.PetsListHeaderCell>
               <S.PetsListHeaderCell>Saída Prevista</S.PetsListHeaderCell>
               <S.PetsListHeaderCell>Diária</S.PetsListHeaderCell>
-              <S.PetsListHeaderCell>Status</S.PetsListHeaderCell>
+            <S.PetsListHeaderCell>Status</S.PetsListHeaderCell>
+            <S.PetsListHeaderCell>ações</S.PetsListHeaderCell>
             </S.PetsListHeader>
             {petsHospedados.map((pet) => (
               <S.PetsListRow key={pet.estadia_id}>
@@ -190,6 +220,23 @@ export function Dashboard() {
                     {pet.pago ? 'Pago' : 'Pendente'}
                   </S.PaymentBadge>
                 </S.PetsListCell>
+              <S.RowActions>
+                <S.ActionButton
+                  type="button"
+                  aria-label="Editar estadia"
+                  onClick={() => handleOpenStayModal(pet.estadia_id, 'edit')}
+                >
+                  <FiEdit2 />
+                </S.ActionButton>
+                <S.ActionButton
+                  type="button"
+                  aria-label="Excluir estadia"
+                  $variant="danger"
+                  onClick={() => handleOpenStayModal(pet.estadia_id, 'delete')}
+                >
+                  <FiTrash2 />
+                </S.ActionButton>
+              </S.RowActions>
               </S.PetsListRow>
             ))}
           </>
@@ -246,6 +293,15 @@ export function Dashboard() {
         onClose={() => setModalOpen(false)}
         data={movimentacoesData}
         isLoading={movimentacoesLoading}
+      />
+
+      <StayManagerModal
+        open={isStayModalOpen}
+        stayId={selectedStayId}
+        initialMode={stayModalMode}
+        onClose={handleStayModalClose}
+        onUpdateSuccess={handleStayUpdateSuccess}
+        onDeleteSuccess={handleStayDeleteSuccess}
       />
     </S.Container>
   )

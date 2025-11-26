@@ -274,7 +274,7 @@ export const PetsListContainer = styled.div`
 
 export const PetsListHeader = styled.div`
   display: grid;
-  grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1fr 1fr;
+  grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1fr 1fr 1fr;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
   gap: 1rem;
@@ -285,11 +285,12 @@ export const PetsListHeaderCell = styled.span`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-weight: ${({ theme }) => theme.fontWeight.medium};
   text-transform: uppercase;
+  text-align: center;
 `
 
 export const PetsListRow = styled.div`
   display: grid;
-  grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1fr 1fr;
+  grid-template-columns: 2fr 2fr 1.5fr 1.5fr 1fr 1fr 1fr;
   align-items: center;
   padding: 1.5rem 0;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
@@ -304,6 +305,10 @@ export const PetsListCell = styled.span`
   font-size: ${({ theme }) => theme.fontSize.p};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-weight: ${({ theme }) => theme.fontWeight.regular};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 `
 
 export const PaymentBadge = styled.span<{ paid: boolean }>`
@@ -322,5 +327,43 @@ export const EmptyPetsMessage = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
   padding: 2rem;
   font-style: italic;
+`
+
+export const RowActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.8rem;
+`
+
+export const ActionButton = styled.button<{ $variant?: 'danger' }>`
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  background: ${({ theme, $variant }) =>
+    $variant === 'danger' ? theme.colors.accentRed : `${theme.colors.accentLavender}1a`};
+  color: ${({ theme, $variant }) =>
+    $variant === 'danger' ? theme.colors.accentWhite : theme.colors.textTertiary};
+  box-shadow: ${({ $variant }) =>
+    $variant === 'danger'
+      ? '0 8px 18px rgba(200, 35, 51, 0.25)'
+      : '0 8px 16px rgba(134, 105, 217, 0.15)'};
+  font-size: 1.6rem;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
 `
 

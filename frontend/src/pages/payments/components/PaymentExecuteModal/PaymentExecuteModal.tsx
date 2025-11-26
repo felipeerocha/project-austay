@@ -1,14 +1,12 @@
 import CloseIcon from '@mui/icons-material/Close'
 import { useEffect, useState } from 'react'
-import type { GetBookingsDTO } from '../../../../services/payments/dto/GetBookingsDTO'
-import type { GetPaymentsDTO } from '../../../../services/payments/dto/GetPaymentsDTO'
-import { PaymentService } from '../../../../services/payments/paymentService'
+import { PaymentService, type PaymentRecord } from '../../../../services/payments/paymentService'
 import * as S from './PaymentExecuteModal.styles'
 import { DateFormat } from '../../../../utils/dateFormat'
 
 type PaymentExecuteModalProps = {
   open: boolean
-  payment: GetBookingsDTO & GetPaymentsDTO
+  payment: PaymentRecord
   onClose: () => void
   onSave: () => void
 }
@@ -44,8 +42,7 @@ export function PaymentExecuteModal(props: PaymentExecuteModalProps) {
     try {
       if (!isSaving) {
         setIsSaving(true)
-        await PaymentService.executePayment(props.payment.id, {
-          status: true,
+        await PaymentService.executePayment(props.payment.estadia_id, {
           meio_pagamento: paymentMethod,
           data_pagamento: paymentDate
         })

@@ -1,6 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close'
-import type { GetBookingsDTO } from '../../../../services/payments/dto/GetBookingsDTO'
-import type { GetPaymentsDTO } from '../../../../services/payments/dto/GetPaymentsDTO'
+import type { PaymentRecord } from '../../../../services/payments/paymentService'
 import * as S from './PaymentDetailsModal.styles'
 import { MoneyFormat } from '../../../../utils/moneyFormat'
 import { DateFormat } from '../../../../utils/dateFormat'
@@ -8,7 +7,7 @@ import React from 'react'
 
 type PaymentDetailsModalProps = {
   open: boolean
-  payment: GetBookingsDTO & GetPaymentsDTO
+  payment: PaymentRecord
   onClose: () => void
   onPressEdit: () => void
 }
@@ -40,15 +39,16 @@ export function PaymentDetailsModal({
     ? DateFormat.formatDayAndMonth(payment.data_saida)
     : '-'
   const valor =
-    typeof payment?.valor !== 'undefined'
+    typeof payment?.valor === 'number'
       ? MoneyFormat.formatCurrency(payment.valor)
       : '-'
   const status = payment?.status ?? '-'
   const dataPagamento = payment?.data_pagamento
     ? DateFormat.formatDayAndMonth(payment.data_pagamento)
     : '-'
+  const meioPagamento = payment?.meio_pagamento ?? '-'
 
-  const isPending = status === 'pendente'
+  const isPending = !payment?.isPaid
 
   return (
     <S.ModalContainer open={open} onClose={onClose}>
@@ -67,6 +67,7 @@ export function PaymentDetailsModal({
         </Field>
         <Field label="Valor">{valor}</Field>
         <Field label="Status">{status}</Field>
+        <Field label="Meio de pagamento">{meioPagamento}</Field>
         <Field label="Data do pagamento">{dataPagamento}</Field>
       </S.Content>
 
